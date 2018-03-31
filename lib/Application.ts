@@ -58,7 +58,7 @@ class Application implements IApplication {
             return this.context;
         }
         try {
-            const ContextClass = require(join(this.appPath, "Context"));
+            const ContextClass = require(join(this.appPath, "Context")).default;
             this.context = new ContextClass({
                 config: await this.getConfig(),
             });
@@ -72,7 +72,7 @@ class Application implements IApplication {
             return this.config;
         }
         try {
-            const ConfigClass = require(join(this.appPath, "Config." + this.environment));
+            const ConfigClass = require(join(this.appPath, "Config." + this.environment)).default;
             this.config = new ConfigClass();
         } catch (e) {
             this.config = {};
