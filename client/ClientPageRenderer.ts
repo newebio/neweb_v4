@@ -1,11 +1,12 @@
 import o, { Onemitter } from "onemitter";
 import React = require("react");
 import ReactDOM = require("react-dom");
-import { IRemoteFrameControllerDataParams } from "../common";
+import { IRemoteFrameControllerDataParams, IRemoteFrameControllerDispatchParams } from "../common";
 import { IPage, IPageFrame } from "./../typings";
 import ClientApp from "./ClientApp";
 import ReactOnemitter from "./ReactOnemitter";
 import RootComponent from "./RootComponent";
+
 export interface IClientPageRendererConfig {
     rootHtmlElement: HTMLElement | null;
     app: ClientApp;
@@ -16,6 +17,8 @@ export interface IClientPageFrame {
     frame: IPageFrame;
 }
 class ClientPageRenderer {
+    protected navigate: (url: string) => void;
+    protected dispatch: (params: IRemoteFrameControllerDispatchParams) => Promise<void>;
     protected rootElement: any;
     protected rootChildrenEmitter = o<React.ComponentClass<any>>();
     protected frames: {
@@ -32,7 +35,12 @@ class ClientPageRenderer {
         this.renderFrame(page.rootFrame);
         this.currentPage = page;
     }
-    public hydrate() {
+    public async initialize(params: {
+        navigate: (url: string) => void;
+        dispatch: (params: IRemoteFrameControllerDispatchParams) => Promise<void>;
+    }) {
+        this.navigate = params.navigate;
+        this.dispatch = params.dispatch;
         return new Promise((resolve) => {
             this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
             ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
@@ -57,7 +65,16 @@ class ClientPageRenderer {
         const ViewClass = await this.config.app.getFrameViewClass(pageFrame);
         const data = pageFrame.data;
         const params = pageFrame.params;
-        const props = { data, params };
+        const props = {
+            data,
+            params,
+            navigate: this.navigate,
+            dispatch: (actionName: string, ...args: any[]) => this.dispatch({
+                frameId: pageFrame.frameId,
+                actionName,
+                args,
+            }),
+        };
         const propsEmitter = o<any>({ value: props });
         this.frames[pageFrame.frameId] = {
             propsEmitter,

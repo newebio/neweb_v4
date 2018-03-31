@@ -17,13 +17,26 @@ class ClientSeance {
             if (initialInfo.page) {
                 yield this.loadPage(initialInfo.page);
                 yield this.config.pageRenderer.loadPage(initialInfo.page);
-                yield this.config.pageRenderer.hydrate();
+                yield this.config.pageRenderer.initialize({
+                    dispatch: (params) => this.dispatch(params),
+                    navigate: (url) => this.navigate(url),
+                });
             }
             this.config.socket.on("frame-controller-data", (params) => {
                 this.config.pageRenderer.emitFrameControllerData(params);
             });
             yield new Promise((resolve) => {
                 this.config.socket.emit("initialize", { seanceId: this.config.seanceId }, resolve);
+            });
+        });
+    }
+    navigate(url) {
+        this.config.socket.emit("navigate", { url });
+    }
+    dispatch(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield new Promise((resolve) => {
+                this.config.socket.emit("frame-controller-dispatch", params, resolve);
             });
         });
     }

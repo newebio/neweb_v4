@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { IRemoteFrameControllerDispatchParams } from "../common";
 import { IApplication, IPage, IRequest, IRoutePage } from "../typings";
 import ControllersManager from "./ControllersManager";
 import PageCreator from "./PageCreator";
@@ -26,6 +27,13 @@ class SeanceController {
                 frameId: frame.frameId,
                 data: this.config.controllersManager.getControllerData(frame.frameId),
             });
+        });
+        socket.on("frame-controller-dispatch", async (params: IRemoteFrameControllerDispatchParams, cb) => {
+            const controller = await this.config.controllersManager.getController(params.frameId);
+            if (controller) {
+                await controller.dispatch(params.actionName, ...params.args);
+                cb();
+            }
         });
     }
     public disconnect() {

@@ -4,3 +4,8 @@ export interface IRemoteFrameControllerDataParams {
     frameId: string;
     data: any;
 }
+export interface IRemoteFrameControllerDispatchParams {
+    frameId: string;
+    actionName: string;
+    args: any[];
+}

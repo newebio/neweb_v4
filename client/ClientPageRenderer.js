@@ -29,10 +29,14 @@ class ClientPageRenderer {
             this.currentPage = page;
         });
     }
-    hydrate() {
-        return new Promise((resolve) => {
-            this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
-            ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
+    initialize(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.navigate = params.navigate;
+            this.dispatch = params.dispatch;
+            return new Promise((resolve) => {
+                this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
+                ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
+            });
         });
     }
     emitFrameControllerData(params) {
@@ -55,7 +59,16 @@ class ClientPageRenderer {
             const ViewClass = yield this.config.app.getFrameViewClass(pageFrame);
             const data = pageFrame.data;
             const params = pageFrame.params;
-            const props = { data, params };
+            const props = {
+                data,
+                params,
+                navigate: this.navigate,
+                dispatch: (actionName, ...args) => this.dispatch({
+                    frameId: pageFrame.frameId,
+                    actionName,
+                    args,
+                }),
+            };
             const propsEmitter = onemitter_1.default({ value: props });
             this.frames[pageFrame.frameId] = {
                 propsEmitter,

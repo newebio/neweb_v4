@@ -33,6 +33,12 @@ class ControllersManager {
             return this.controllers[frameId].data;
         }
     }
+    public getController(frameId: string) {
+        if (this.controllers[frameId]) {
+            return this.controllers[frameId].controller;
+        }
+        return null;
+    }
     public async createController(params: ICreateControllerParams) {
         const ControllerClass = await this.config.app.getFrameControllerClass(params.frameName);
         const controller = new ControllerClass({
