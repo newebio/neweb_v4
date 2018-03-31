@@ -103,3 +103,9 @@ export interface ISeanceDumpInfo {
     seanceId: string;
     page?: IPage;
 }
+export interface IViewProps<P, D> {
+    params: P;
+    data: D;
+    navigate: (url: string) => void;
+    dispatch: (actionName: string, ...args: any[]) => Promise<void>;
+}
