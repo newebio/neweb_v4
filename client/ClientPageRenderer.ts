@@ -35,12 +35,27 @@ class ClientPageRenderer {
         this.renderFrame(page.rootFrame);
         this.currentPage = page;
     }
-    public async initialize(params: {
+    public async newPage(page: IPage) {
+        await Promise.all(page.frames.map(async (frame) => {
+            if (!this.frames[frame.frameId]) {
+                await this.createFrame(frame);
+            } else {
+                this.updateFrame(frame);
+            }
+        }));
+        // TODO delete old frames
+        this.renderFrame(page.rootFrame);
+        this.rootChildrenEmitter.emit(this.frames[page.rootFrame].element);
+        this.currentPage = page;
+    }
+    public setMethods(params: {
         navigate: (url: string) => void;
         dispatch: (params: IRemoteFrameControllerDispatchParams) => Promise<void>;
     }) {
         this.navigate = params.navigate;
         this.dispatch = params.dispatch;
+    }
+    public async initialize() {
         return new Promise((resolve) => {
             this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
             ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
@@ -48,7 +63,10 @@ class ClientPageRenderer {
     }
     public emitFrameControllerData(params: IRemoteFrameControllerDataParams) {
         if (this.frames[params.frameId]) {
-            this.frames[params.frameId].propsEmitter.emit({ data: params.data });
+            this.frames[params.frameId].propsEmitter.emit({
+                ...this.frames[params.frameId].propsEmitter.get(),
+                data: params.data,
+            });
         }
     }
     protected renderFrame(pageFrameId: string) {
@@ -59,7 +77,17 @@ class ClientPageRenderer {
             this.renderFrame(childFrameId);
             places[framePlace] = this.frames[childFrameId].element;
         });
-        frame.propsEmitter.emit({ ...frame.propsEmitter.get(), places });
+        frame.propsEmitter.emit({ ...frame.propsEmitter.get(), ...places });
+    }
+    protected async updateFrame(pageFrame: IPageFrame) {
+        const oldFrame = this.frames[pageFrame.frameId];
+        const props: any = {};
+        if (JSON.stringify(oldFrame.frame.params) !== JSON.stringify(pageFrame.params)) {
+            oldFrame.frame.params = pageFrame.params;
+            props.params = pageFrame.params;
+        }
+        oldFrame.propsEmitter.emit({ ...oldFrame.propsEmitter.get(), ...props });
+        oldFrame.frame.frames = pageFrame.frames;
     }
     protected async createFrame(pageFrame: IPageFrame) {
         const ViewClass = await this.config.app.getFrameViewClass(pageFrame);

@@ -1,7 +1,8 @@
 import { Socket } from "socket.io";
 import { IRemoteFrameControllerDispatchParams } from "../common";
-import { IApplication, IPage, IRequest, IRoutePage } from "../typings";
+import { IApplication, IPage, IPageFrame, IRequest, IRoutePage } from "../typings";
 import ControllersManager from "./ControllersManager";
+import PageComparator from "./PageComparator";
 import PageCreator from "./PageCreator";
 import SessionsManager from "./SessionsManager";
 
@@ -14,6 +15,7 @@ export interface ISeanceConfig {
     pageCreator: PageCreator;
     controllersManager: ControllersManager;
 }
+
 class SeanceController {
     protected userAgent: string;
     protected clientIpAddress: string;
@@ -35,23 +37,32 @@ class SeanceController {
                 cb();
             }
         });
+        socket.on("navigate", async ({ url }: { url: string }) => {
+            await this.navigate(url);
+        });
     }
     public disconnect() {
         this.socket = undefined;
     }
-    public async navigate(_: string) {
-
-        /*const route = await router.resolve({
+    public async navigate(url: string) {
+        const router = await this.config.app.getRouter();
+        const route = await router.resolve({
             request: {
                 ...this.config.request,
                 url,
             },
             session: await this.config.sessionsManager.getSessionContext(this.config.sessionId),
         });
+        if (route.type === "redirect") {
+            if (this.socket) {
+                this.socket.emit("redirect", route.url);
+            }
+            return;
+        }
         if (route.type === "page") {
             await this.loadPage(route.page);
         }
-        return route;*/
+        return route;
     }
     public async loadPage(routePage: IRoutePage) {
         if (this.currentPage) {
@@ -66,34 +77,51 @@ class SeanceController {
             page: this.currentPage,
         };
     }
-    protected async replacePage(_: IRoutePage) {
-        // TODO
+    protected async replacePage(routePage: IRoutePage) {
+        const page = await this.config.pageCreator.createPage(routePage);
+        const comparator = new PageComparator();
+        const info = comparator.getCompareInfo(this.currentPage, page);
+        // TODO not waiting
+        info.frameidsForRemoving.map((frameId) => this.config.controllersManager.dispose(frameId));
+        await Promise.all(info.newFrames.map(async (frame) => this.createController(frame)));
+        await Promise.all(info.frameForChangeParams.map(async (frame) => {
+            const controller = this.config.controllersManager.getController(frame.frameId);
+            await controller.onChangeParams(frame.params);
+        }));
+        this.currentPage = info.page;
+
+        if (this.socket) {
+            this.socket.emit("new-page", {
+                page: info.page,
+            });
+        }
     }
     protected async createPage(routePage: IRoutePage) {
         const page = await this.config.pageCreator.createPage(routePage);
-        await Promise.all(page.frames.map(async (frame) => {
-            const controller = await this.config.controllersManager.createController({
-                frameId: frame.frameId,
-                session: await this.config.sessionsManager.getSessionContext(this.config.sessionId),
-                context: await this.config.app.getContext(),
-                frameName: frame.frameName,
-                params: frame.params,
-                navigate: (url) => this.navigate(url),
-                seanceId: this.config.seanceId,
-                sessionId: this.config.sessionId,
-            });
-            const data = await this.config.controllersManager.getControllerData(frame.frameId);
-            frame.data = data;
-            controller.on((value) => {
-                if (this.socket) {
-                    this.socket.emit("frame-controller-data", {
-                        frameId: frame.frameId,
-                        data: value,
-                    });
-                }
-            });
-        }));
+        await Promise.all(page.frames.map(async (frame) => this.createController(frame)));
         return page;
+    }
+    protected async createController(frame: IPageFrame) {
+        const controller = await this.config.controllersManager.createController({
+            frameId: frame.frameId,
+            session: await this.config.sessionsManager.getSessionContext(this.config.sessionId),
+            context: await this.config.app.getContext(),
+            frameName: frame.frameName,
+            params: frame.params,
+            navigate: (url) => this.navigate(url),
+            seanceId: this.config.seanceId,
+            sessionId: this.config.sessionId,
+        });
+        const data = await this.config.controllersManager.getControllerData(frame.frameId);
+        frame.data = data;
+        controller.on((value) => {
+            if (this.socket) {
+                this.socket.emit("frame-controller-data", {
+                    frameId: frame.frameId,
+                    data: value,
+                });
+            }
+        });
     }
 }
 export default SeanceController;

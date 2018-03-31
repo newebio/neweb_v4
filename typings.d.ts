@@ -74,6 +74,7 @@ export interface ISession {
 }
 type FrameId = string;
 export interface IPage {
+    url: string;
     title?: string;
     meta?: IPageMeta[];
     rootFrame: FrameId;
@@ -94,6 +95,8 @@ export interface IPageFrame {
 export interface IFrameController extends Onemitter<any> {
     getInitialData: () => Promise<any>;
     dispatch: (name: string, ...args: any[]) => Promise<void>;
+    dispose: () => Promise<void>;
+    onChangeParams: (params: any) => Promise<void>;
 }
 export interface ISessionContext {
     getItem(name: string): Promise<any>;

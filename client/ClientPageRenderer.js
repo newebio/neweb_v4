@@ -29,10 +29,28 @@ class ClientPageRenderer {
             this.currentPage = page;
         });
     }
-    initialize(params) {
+    newPage(page) {
         return __awaiter(this, void 0, void 0, function* () {
-            this.navigate = params.navigate;
-            this.dispatch = params.dispatch;
+            yield Promise.all(page.frames.map((frame) => __awaiter(this, void 0, void 0, function* () {
+                if (!this.frames[frame.frameId]) {
+                    yield this.createFrame(frame);
+                }
+                else {
+                    this.updateFrame(frame);
+                }
+            })));
+            // TODO delete old frames
+            this.renderFrame(page.rootFrame);
+            this.rootChildrenEmitter.emit(this.frames[page.rootFrame].element);
+            this.currentPage = page;
+        });
+    }
+    setMethods(params) {
+        this.navigate = params.navigate;
+        this.dispatch = params.dispatch;
+    }
+    initialize() {
+        return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve) => {
                 this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
                 ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
@@ -41,7 +59,7 @@ class ClientPageRenderer {
     }
     emitFrameControllerData(params) {
         if (this.frames[params.frameId]) {
-            this.frames[params.frameId].propsEmitter.emit({ data: params.data });
+            this.frames[params.frameId].propsEmitter.emit(Object.assign({}, this.frames[params.frameId].propsEmitter.get(), { data: params.data }));
         }
     }
     renderFrame(pageFrameId) {
@@ -52,7 +70,19 @@ class ClientPageRenderer {
             this.renderFrame(childFrameId);
             places[framePlace] = this.frames[childFrameId].element;
         });
-        frame.propsEmitter.emit(Object.assign({}, frame.propsEmitter.get(), { places }));
+        frame.propsEmitter.emit(Object.assign({}, frame.propsEmitter.get(), places));
+    }
+    updateFrame(pageFrame) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const oldFrame = this.frames[pageFrame.frameId];
+            const props = {};
+            if (JSON.stringify(oldFrame.frame.params) !== JSON.stringify(pageFrame.params)) {
+                oldFrame.frame.params = pageFrame.params;
+                props.params = pageFrame.params;
+            }
+            oldFrame.propsEmitter.emit(Object.assign({}, oldFrame.propsEmitter.get(), props));
+            oldFrame.frame.frames = pageFrame.frames;
+        });
     }
     createFrame(pageFrame) {
         return __awaiter(this, void 0, void 0, function* () {

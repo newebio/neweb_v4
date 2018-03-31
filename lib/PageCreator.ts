@@ -14,14 +14,18 @@ class PageCreator {
             .map((frame) => this.createFrame(frame.frameId, frame.frame, frame.frames)));
         const modules: IPackInfoModule[] = [];
         return {
+            url: routePage.url,
             frames: pageFrames,
             rootFrame: frames.frameId,
             modules,
         };
     }
-    protected async createFrame(
-        frameId: string, routePageFrame: IRoutePageFrame,
+    public async createFrame(
+        frameId: string | undefined, routePageFrame: IRoutePageFrame,
         children: { [index: string]: string }): Promise<IPageFrame> {
+        if (!frameId) {
+            frameId = this.generateFrameId();
+        }
         const frameName = routePageFrame.name;
         const data = null;
         const params = routePageFrame.params;

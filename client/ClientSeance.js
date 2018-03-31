@@ -14,17 +14,22 @@ class ClientSeance {
     }
     initialize(initialInfo) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.config.pageRenderer.setMethods({
+                dispatch: (params) => this.dispatch(params),
+                navigate: (url) => this.navigate(url),
+            });
             if (initialInfo.page) {
                 yield this.loadPage(initialInfo.page);
                 yield this.config.pageRenderer.loadPage(initialInfo.page);
-                yield this.config.pageRenderer.initialize({
-                    dispatch: (params) => this.dispatch(params),
-                    navigate: (url) => this.navigate(url),
-                });
+                yield this.config.pageRenderer.initialize();
             }
             this.config.socket.on("frame-controller-data", (params) => {
                 this.config.pageRenderer.emitFrameControllerData(params);
             });
+            this.config.socket.on("new-page", (params) => __awaiter(this, void 0, void 0, function* () {
+                yield this.config.pageRenderer.newPage(params.page);
+                history.replaceState(params.page, "", params.page.url);
+            }));
             yield new Promise((resolve) => {
                 this.config.socket.emit("initialize", { seanceId: this.config.seanceId }, resolve);
             });

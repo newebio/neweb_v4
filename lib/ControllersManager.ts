@@ -34,10 +34,15 @@ class ControllersManager {
         }
     }
     public getController(frameId: string) {
-        if (this.controllers[frameId]) {
-            return this.controllers[frameId].controller;
+        if (!this.controllers[frameId]) {
+            throw new Error("Not found controller " + frameId);
         }
-        return null;
+        return this.controllers[frameId].controller;
+    }
+    public async dispose(frameId: string) {
+        await this.controllers[frameId].controller.dispose();
+        this.controllers[frameId].controller.off(this.controllers[frameId].dataCallback);
+        delete this.controllers[frameId];
     }
     public async createController(params: ICreateControllerParams) {
         const ControllerClass = await this.config.app.getFrameControllerClass(params.frameName);
