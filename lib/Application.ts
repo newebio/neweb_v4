@@ -1,5 +1,5 @@
 import { exists, readFile } from "fs";
-import { IPackInfoModule, ModulePacker } from "neweb-pack";
+import { IPackInfo, ModulePacker } from "neweb-pack";
 import { join, resolve } from "path";
 import { promisify } from "util";
 import { INITIAL_VAR } from "../common";
@@ -93,11 +93,10 @@ class Application implements IApplication {
             return () => null;
         }
     }
-    public async getFrameModules(frameName: string): Promise<IPackInfoModule[]> {
-        const pack = await this.configuration.modulePacker.addLocalPackage(
+    public async getFrameViewModulePackInfo(frameName: string): Promise<IPackInfo> {
+        return this.configuration.modulePacker.addLocalPackage(
             join(this.appPath, "frames", frameName, "view.js"),
         );
-        return pack.modules.concat([{ name: pack.name, type: pack.type, version: pack.version }]);
     }
     public async fillTemplate(html: string, meta: IPageMetaInfo, initialInfo: any) {
         const templatePath = join(this.appPath, "template.html");

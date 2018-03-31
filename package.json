@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "tsc && tslint --project tsconfig.json && jest --verbose --coverage",
-    "watch:test": "jest --watch"
+    "watch:test": "jest --watch",
+    "build": "webpack --mode=development",
+    "build:watch": "webpack -w --mode=development"
   },
   "repository": {
     "type": "git",
@@ -27,7 +29,8 @@
     "coveralls": "^3.0.0",
     "jest": "^22.4.3",
     "tslint": "^5.9.1",
-    "typescript": "^2.8.1"
+    "typescript": "^2.8.1",
+    "webpack-cli": "^2.0.13"
   },
   "dependencies": {
     "@types/cookie-parser": "^1.4.1",
@@ -37,6 +40,7 @@
     "@types/react": "^16.1.0",
     "@types/react-dom": "^16.0.4",
     "@types/socket.io": "^1.4.33",
+    "@types/socket.io-client": "^1.4.32",
     "@types/uid-safe": "^2.1.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.3",
@@ -46,6 +50,7 @@
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
     "socket.io": "^2.1.0",
+    "socket.io-client": "^2.1.0",
     "uid-safe": "^2.1.5"
   }
 }

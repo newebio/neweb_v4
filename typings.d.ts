@@ -1,4 +1,4 @@
-import { IPackInfoModule } from "neweb-pack";
+import { IPackInfoModule, IPackInfo } from "neweb-pack";
 
 export interface IRequest {
     url: string;
@@ -51,7 +51,7 @@ export interface IApplication {
     getContext: () => Promise<any>;
     getFrameControllerClass: (name: string) => Promise<IFrameControllerClass>;
     getFrameViewClass: (name: string) => Promise<React.ComponentClass<any>>;
-    getFrameModules: (name: string) => Promise<IPackInfoModule[]>;
+    getFrameViewModulePackInfo: (name: string) => Promise<IPackInfo>;
     hasFrame: (frameName: string) => Promise<boolean>;
 }
 export interface IFrameControllerConfig<P, D, C> {
@@ -82,6 +82,8 @@ export interface IPage {
 export interface IPageFrame {
     frameId: FrameId;
     frameName: string;
+    frameVersion?: string;
+    modules: IPackInfoModule[];
     params: string;
     data: any;
     frames: {

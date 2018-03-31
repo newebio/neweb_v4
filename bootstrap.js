@@ -13,9 +13,11 @@ const express = require("express");
 const http_1 = require("http");
 const neweb_pack_1 = require("neweb-pack");
 const path_1 = require("path");
+const SocketIOServer = require("socket.io");
 const common_1 = require("./common");
 const Application_1 = require("./lib/Application");
 const ControllersManager_1 = require("./lib/ControllersManager");
+const ModulesServer_1 = require("./lib/ModulesServer");
 const PageCreator_1 = require("./lib/PageCreator");
 const PageRenderer_1 = require("./lib/PageRenderer");
 const SeancesManager_1 = require("./lib/SeancesManager");
@@ -25,6 +27,7 @@ const SessionsManager_1 = require("./lib/SessionsManager");
 const SessionsStorage_1 = require("./lib/SessionsStorage");
 const logger = console;
 const appPath = path_1.resolve(path_1.join(process.cwd(), "app"));
+const modulesPath = path_1.resolve(path_1.join(appPath, "cache", "modules"));
 const environment = process.env.NODE_ENV === "production" ? "production" : "development";
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 (() => __awaiter(this, void 0, void 0, function* () {
@@ -33,7 +36,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     const modulePacker = new neweb_pack_1.ModulePacker({
         appRoot: appPath,
         excludedModules: ["react", "react-dom"],
-        modulesPath: path_1.join(appPath, "cache", "modules"),
+        modulesPath,
         REQUIRE_FUNC_NAME: common_1.REQUIRE_FUNC_NAME,
     });
     const app = new Application_1.default({
@@ -73,6 +76,12 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
         seancesManager,
         sessionsManager,
     });
+    expressApp.get("/bundle.js", (_, res) => res.sendFile(path_1.resolve(__dirname + "/dist/bundle.js")));
+    const modulesServer = new ModulesServer_1.default({
+        modulesPath,
+    });
+    modulesServer.attach(expressApp);
+    expressApp.use(express.static(path_1.join(appPath, "public")));
     expressApp.use(cookieParser(), (req, res) => server.onRequest({
         cookies: req.cookies || {},
         headers: req.headers || {},
@@ -80,6 +89,12 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
         url: req.url,
         clientIpAddress: req.ip,
     }, res));
+    const io = SocketIOServer(httpServer, {
+        wsEngine: "ws",
+    });
+    io.on("connection", (socket) => {
+        server.onNewConnection(socket);
+    });
     httpServer.listen(port, (err) => {
         if (err) {
             logger.log(err);

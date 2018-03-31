@@ -12,18 +12,12 @@ class PageCreator {
         const frames = this.collectFrames(routePage.rootFrame);
         const pageFrames = await Promise.all(frames.allFrames
             .map((frame) => this.createFrame(frame.frameId, frame.frame, frame.frames)));
-        let modules: IPackInfoModule[] = [];
-        await Promise.all(frames.allFrames.map(async (frame) => {
-            modules = modules.concat(await this.config.app.getFrameModules(frame.frame.name));
-        }));
+        const modules: IPackInfoModule[] = [];
         return {
             frames: pageFrames,
             rootFrame: frames.frameId,
             modules,
         };
-    }
-    protected async getFrameModules(frameName: string) {
-        return this.config.app.getFrameModules(frameName);
     }
     protected async createFrame(
         frameId: string, routePageFrame: IRoutePageFrame,
@@ -31,9 +25,12 @@ class PageCreator {
         const frameName = routePageFrame.name;
         const data = null;
         const params = routePageFrame.params;
+        const packInfo = await this.config.app.getFrameViewModulePackInfo(frameName);
         return {
             frameId,
             frameName,
+            frameVersion: packInfo.version,
+            modules: packInfo.modules.concat([{ name: packInfo.name, type: packInfo.type, version: packInfo.version }]),
             frames: children,
             data,
             params,
