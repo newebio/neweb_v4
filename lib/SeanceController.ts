@@ -1,3 +1,4 @@
+import { Socket } from "socket.io";
 import { IApplication, IPage, IRequest, IRoutePage } from "../typings";
 import ControllersManager from "./ControllersManager";
 import PageCreator from "./PageCreator";
@@ -16,7 +17,20 @@ class SeanceController {
     protected userAgent: string;
     protected clientIpAddress: string;
     protected currentPage: IPage;
+    protected socket?: Socket;
     constructor(protected config: ISeanceConfig) { }
+    public connect(socket: Socket) {
+        this.socket = socket;
+        this.currentPage.frames.map((frame) => {
+            socket.emit("frame-controller-data", {
+                frameId: frame.frameId,
+                data: this.config.controllersManager.getControllerData(frame.frameId),
+            });
+        });
+    }
+    public disconnect() {
+        this.socket = undefined;
+    }
     public async navigate(_: string) {
 
         /*const route = await router.resolve({
@@ -60,8 +74,16 @@ class SeanceController {
                 seanceId: this.config.seanceId,
                 sessionId: this.config.sessionId,
             });
-            const data = await controller.getInitialData();
+            const data = await this.config.controllersManager.getControllerData(frame.frameId);
             frame.data = data;
+            controller.on((value) => {
+                if (this.socket) {
+                    this.socket.emit("frame-controller-data", {
+                        frameId: frame.frameId,
+                        data: value,
+                    });
+                }
+            });
         }));
         return page;
     }

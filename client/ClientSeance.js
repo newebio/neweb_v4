@@ -19,7 +19,10 @@ class ClientSeance {
                 yield this.config.pageRenderer.loadPage(initialInfo.page);
                 yield this.config.pageRenderer.hydrate();
             }
-            return new Promise((resolve) => {
+            this.config.socket.on("frame-controller-data", (params) => {
+                this.config.pageRenderer.emitFrameControllerData(params);
+            });
+            yield new Promise((resolve) => {
                 this.config.socket.emit("initialize", { seanceId: this.config.seanceId }, resolve);
             });
         });

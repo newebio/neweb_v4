@@ -1,3 +1,4 @@
+import cookieParser = require("cookie-parser");
 import { Response } from "express";
 import { Socket } from "socket.io";
 import { IApplication, IRequest } from "../typings";
@@ -40,9 +41,14 @@ class Server {
             { title: page.title, meta: page.meta }, seanceDump));
     }
     public async onNewConnection(socket: Socket) {
-        socket.on("initialize", async (params: {
-            seanceId: string;
-        }) => {
+        await new Promise((resolve) => {
+            cookieParser()(socket.request, {} as any, resolve);
+        });
+        socket.on("initialize", async (
+            params: {
+                seanceId: string;
+            },
+            cb) => {
             const sessionId = await this.config.sessionsManager.resolveSessionIdByRequest({
                 clientIpAddress: socket.conn.remoteAddress,
                 cookies: socket.request.cookies,
@@ -55,11 +61,13 @@ class Server {
                 sessionId,
                 socket,
             });
+            cb();
         });
         socket.on("disconnect", () => this.disconnect(socket));
         socket.on("error", () => this.disconnect(socket));
     }
     protected async disconnect(socket: Socket) {
+        socket.removeAllListeners();
         await this.config.seancesManager.disconnect(socket);
     }
 }

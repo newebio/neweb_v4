@@ -45,15 +45,17 @@ class SeancesManager {
             await this.restoreSeance();
         }
         this.seances[params.seanceId].socket = params.socket;
+        this.seances[params.seanceId].controller.connect(params.socket);
     }
     public disconnect(socket: Socket) {
         const seanceId = Object.keys(this.seances).find((n) => this.seances[n].socket === socket);
         if (seanceId) {
             this.seances[seanceId].socket = undefined;
+            this.seances[seanceId].controller.disconnect();
         }
     }
     protected restoreSeance() {
-        // TODO
+        // TODO: get info about seans from client
     }
 }
 export default SeancesManager;

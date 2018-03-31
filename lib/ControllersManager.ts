@@ -18,12 +18,19 @@ class ControllersManager {
             sessionId: string;
             seanceId: string;
             controller: IFrameController;
+            dataCallback: (value: any) => void,
+            data: any;
         };
     } = {};
     constructor(protected config: IControllersManagerConfig) { }
     public resolveController(params: ICreateControllerParams) {
         if (!this.controllers[params.frameId]) {
             this.createController(params);
+        }
+    }
+    public getControllerData(frameId: string) {
+        if (this.controllers[frameId]) {
+            return this.controllers[frameId].data;
         }
     }
     public async createController(params: ICreateControllerParams) {
@@ -35,11 +42,18 @@ class ControllersManager {
             params: params.params,
             session: params.session,
         });
+        const data = await controller.getInitialData();
+        const dataCallback = (value: any) => {
+            this.controllers[params.frameId].data = value;
+        };
         this.controllers[params.frameId] = {
             controller,
+            data,
+            dataCallback,
             seanceId: params.seanceId,
             sessionId: params.sessionId,
         };
+        controller.on(dataCallback);
         return controller;
     }
 }

@@ -1,4 +1,5 @@
 import { IPage, ISeanceDumpInfo } from "..";
+import { IRemoteFrameControllerDataParams } from "../common";
 import ClientApp from "./ClientApp";
 import ClientPageRenderer from "./ClientPageRenderer";
 export interface IClientSeanceConfig {
@@ -17,7 +18,10 @@ class ClientSeance {
             await this.config.pageRenderer.loadPage(initialInfo.page);
             await this.config.pageRenderer.hydrate();
         }
-        return new Promise((resolve) => {
+        this.config.socket.on("frame-controller-data", (params: IRemoteFrameControllerDataParams) => {
+            this.config.pageRenderer.emitFrameControllerData(params);
+        });
+        await new Promise((resolve) => {
             this.config.socket.emit("initialize", { seanceId: this.config.seanceId }, resolve);
         });
     }

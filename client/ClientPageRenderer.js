@@ -35,6 +35,11 @@ class ClientPageRenderer {
             ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
         });
     }
+    emitFrameControllerData(params) {
+        if (this.frames[params.frameId]) {
+            this.frames[params.frameId].propsEmitter.emit({ data: params.data });
+        }
+    }
     renderFrame(pageFrameId) {
         const frame = this.frames[pageFrameId];
         const places = {};

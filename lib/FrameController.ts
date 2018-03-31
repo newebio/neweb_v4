@@ -18,4 +18,7 @@ export default class FrameController<P, D, C> extends Onemitter<D> {
         }
         throw new Error("Unknown action " + actionName);
     }
+    public dispose() {
+        this.removeAllListeners();
+    }
 }

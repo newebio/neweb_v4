@@ -1,4 +1,5 @@
 import { IPackInfoModule, IPackInfo } from "neweb-pack";
+import { Onemitter } from "onemitter";
 
 export interface IRequest {
     url: string;
@@ -90,7 +91,7 @@ export interface IPageFrame {
         [index: string]: FrameId;
     };
 }
-export interface IFrameController {
+export interface IFrameController extends Onemitter<any> {
     getInitialData: () => Promise<any>;
     dispatch: (name: string, ...args: any[]) => Promise<void>;
 }

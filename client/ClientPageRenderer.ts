@@ -1,6 +1,7 @@
 import o, { Onemitter } from "onemitter";
 import React = require("react");
 import ReactDOM = require("react-dom");
+import { IRemoteFrameControllerDataParams } from "../common";
 import { IPage, IPageFrame } from "./../typings";
 import ClientApp from "./ClientApp";
 import ReactOnemitter from "./ReactOnemitter";
@@ -36,6 +37,11 @@ class ClientPageRenderer {
             this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
             ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
         });
+    }
+    public emitFrameControllerData(params: IRemoteFrameControllerDataParams) {
+        if (this.frames[params.frameId]) {
+            this.frames[params.frameId].propsEmitter.emit({ data: params.data });
+        }
     }
     protected renderFrame(pageFrameId: string) {
         const frame = this.frames[pageFrameId];
