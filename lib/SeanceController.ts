@@ -1,23 +1,23 @@
-import { IApplication, IPage, IRequest, IRoute, IRoutePage } from "../typings";
+import { IApplication, IPage, IRequest, IRoutePage } from "../typings";
 import ControllersManager from "./ControllersManager";
 import PageCreator from "./PageCreator";
 import SessionsManager from "./SessionsManager";
 
-export interface ISeansConfig {
+export interface ISeanceConfig {
     app: IApplication;
     sessionId: string;
-    seansId: string;
+    seanceId: string;
     request: IRequest;
     sessionsManager: SessionsManager;
     pageCreator: PageCreator;
     controllersManager: ControllersManager;
 }
-class SeansController {
+class SeanceController {
     protected userAgent: string;
     protected clientIpAddress: string;
     protected currentPage: IPage;
-    constructor(protected config: ISeansConfig) { }
-    public async navigate(url: string) {
+    constructor(protected config: ISeanceConfig) { }
+    public async navigate(_: string) {
 
         /*const route = await router.resolve({
             request: {
@@ -40,7 +40,7 @@ class SeansController {
     }
     public dumpToJson() {
         return {
-            seansId: this.config.seansId,
+            seanceId: this.config.seanceId,
             page: this.currentPage,
         };
     }
@@ -57,7 +57,7 @@ class SeansController {
                 frameName: frame.frameName,
                 params: frame.params,
                 navigate: (url) => this.navigate(url),
-                seansId: this.config.seansId,
+                seanceId: this.config.seanceId,
                 sessionId: this.config.sessionId,
             });
             const data = await controller.getInitialData();
@@ -66,4 +66,4 @@ class SeansController {
         return page;
     }
 }
-export default SeansController;
+export default SeanceController;

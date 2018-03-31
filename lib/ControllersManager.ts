@@ -1,7 +1,7 @@
 import { IApplication, IFrameController, ISessionContext } from "../typings";
 export interface ICreateControllerParams {
     frameId: string;
-    seansId: string;
+    seanceId: string;
     sessionId: string;
     frameName: string;
     params: any;
@@ -16,7 +16,7 @@ class ControllersManager {
     protected controllers: {
         [index: string]: {
             sessionId: string;
-            seansId: string;
+            seanceId: string;
             controller: IFrameController;
         };
     } = {};
@@ -37,7 +37,7 @@ class ControllersManager {
         });
         this.controllers[params.frameId] = {
             controller,
-            seansId: params.seansId,
+            seanceId: params.seanceId,
             sessionId: params.sessionId,
         };
         return controller;

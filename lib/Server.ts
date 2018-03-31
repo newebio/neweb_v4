@@ -2,21 +2,21 @@ import { Response } from "express";
 import { Socket } from "socket.io";
 import { IApplication, IRequest } from "../typings";
 import PageRenderer from "./PageRenderer";
-import SeansesManager from "./SeansesManager";
+import SeancesManager from "./SeancesManager";
 import SessionsManager from "./SessionsManager";
 
 export interface IServerConfig {
     sessionsManager: SessionsManager;
-    seansesManager: SeansesManager;
+    seancesManager: SeancesManager;
     pageRenderer: PageRenderer;
     app: IApplication;
+    logger: typeof console;
 }
 class Server {
     constructor(protected config: IServerConfig) { }
     public async onRequest(request: IRequest, res: Response) {
         const sessionId =
             await this.config.sessionsManager.resolveSessionIdByRequest(request);
-        await this.config.sessionsManager.enrichResponse(sessionId, res);
         const router = await this.config.app.getRouter();
         const route =
             await router.resolve({ request, session: await this.config.sessionsManager.getSessionContext(sessionId) });
@@ -29,17 +29,19 @@ class Server {
             res.status(404).send(route.text);
             return;
         }
-        const seans = await this.config.seansesManager.createSeans({ sessionId, request });
-        await seans.loadPage(route.page);
-        const seansDump = seans.dumpToJson();
-        const page = seansDump.page;
-        const { html } = await this.config.pageRenderer.render(seansDump.page);
+        // Add session info to response
+        await this.config.sessionsManager.enrichResponse(sessionId, res);
+        const seance = await this.config.seancesManager.createSeance({ sessionId, request });
+        await seance.loadPage(route.page);
+        const seanceDump = seance.dumpToJson();
+        const page = seanceDump.page;
+        const { html } = await this.config.pageRenderer.render(seanceDump.page);
         res.status(200).send(await this.config.app.fillTemplate(html,
-            { title: page.title, meta: page.meta }, seansDump));
+            { title: page.title, meta: page.meta }, seanceDump));
     }
     public async onNewConnection(socket: Socket) {
         socket.on("initialize", async (params: {
-            seansId: string;
+            seanceId: string;
         }) => {
             const sessionId = await this.config.sessionsManager.resolveSessionIdByRequest({
                 clientIpAddress: socket.conn.remoteAddress,
@@ -48,8 +50,8 @@ class Server {
                 url: "",
                 hostname: "",
             });
-            await this.config.seansesManager.connect({
-                seansId: params.seansId,
+            await this.config.seancesManager.connect({
+                seanceId: params.seanceId,
                 sessionId,
                 socket,
             });
@@ -58,7 +60,7 @@ class Server {
         socket.on("error", () => this.disconnect(socket));
     }
     protected async disconnect(socket: Socket) {
-        await this.config.seansesManager.disconnect(socket);
+        await this.config.seancesManager.disconnect(socket);
     }
 }
 export default Server;

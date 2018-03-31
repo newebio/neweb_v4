@@ -30,7 +30,7 @@ class SessionsManager {
         response.cookie("sessid", sessionId + ":" + session.hash);
     }
     public async resolveSessionIdByRequest(request: IRequest) {
-        let sessid = request.headers.sessid;
+        let sessid = request.cookies.sessid;
         let sessionId: string;
         if (!sessid) {
             sessionId = (await this.createSession(request)).id;
@@ -39,13 +39,13 @@ class SessionsManager {
                 sessid = sessid[0];
             }
             const [id, hash] = sessid.split(":");
+            sessionId = id;
             if (!this.sessions[id]) {
                 await this.loadSession(id);
             }
             if (!this.sessions[id] || this.sessions[id].hash !== hash) {
-                await this.createSession(request);
+                sessionId = (await this.createSession(request)).id;
             }
-            sessionId = id;
         }
         return this.sessions[sessionId].session.id;
     }

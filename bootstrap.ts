@@ -8,7 +8,7 @@ import Application from "./lib/Application";
 import ControllersManager from "./lib/ControllersManager";
 import PageCreator from "./lib/PageCreator";
 import PageRenderer from "./lib/PageRenderer";
-import SeansesManager from "./lib/SeansesManager";
+import SeancesManager from "./lib/SeancesManager";
 import Server from "./lib/Server";
 import SessionsDataStorage from "./lib/SessionsDataStorage";
 import SessionsManager from "./lib/SessionsManager";
@@ -50,7 +50,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     const pageCreator = new PageCreator({
         app,
     });
-    const seansesManager = new SeansesManager({
+    const seancesManager = new SeancesManager({
         app,
         controllersManager,
         pageCreator,
@@ -58,8 +58,9 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     });
     const server = new Server({
         app,
+        logger: console,
         pageRenderer,
-        seansesManager,
+        seancesManager,
         sessionsManager,
     });
 

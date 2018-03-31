@@ -18,7 +18,7 @@ const Application_1 = require("./lib/Application");
 const ControllersManager_1 = require("./lib/ControllersManager");
 const PageCreator_1 = require("./lib/PageCreator");
 const PageRenderer_1 = require("./lib/PageRenderer");
-const SeansesManager_1 = require("./lib/SeansesManager");
+const SeancesManager_1 = require("./lib/SeancesManager");
 const Server_1 = require("./lib/Server");
 const SessionsDataStorage_1 = require("./lib/SessionsDataStorage");
 const SessionsManager_1 = require("./lib/SessionsManager");
@@ -60,7 +60,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     const pageCreator = new PageCreator_1.default({
         app,
     });
-    const seansesManager = new SeansesManager_1.default({
+    const seancesManager = new SeancesManager_1.default({
         app,
         controllersManager,
         pageCreator,
@@ -68,8 +68,9 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     });
     const server = new Server_1.default({
         app,
+        logger: console,
         pageRenderer,
-        seansesManager,
+        seancesManager,
         sessionsManager,
     });
     expressApp.use(cookieParser(), (req, res) => server.onRequest({

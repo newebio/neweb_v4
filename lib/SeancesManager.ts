@@ -2,27 +2,27 @@ import { Socket } from "socket.io";
 import { IApplication, IRequest } from "../typings";
 import ControllersManager from "./ControllersManager";
 import PageCreator from "./PageCreator";
-import SeansController from "./SeansController";
+import SeanceController from "./SeanceController";
 import SessionsManager from "./SessionsManager";
-export interface ISeansesManagerConfig {
+export interface ISeancesManagerConfig {
     app: IApplication;
     sessionsManager: SessionsManager;
     controllersManager: ControllersManager;
     pageCreator: PageCreator;
 }
-class SeansesManager {
-    protected seanses: {
+class SeancesManager {
+    protected seances: {
         [index: string]: {
             sessionId: string;
-            controller: SeansController;
+            controller: SeanceController;
             socket?: Socket;
         };
     } = {};
-    constructor(protected config: ISeansesManagerConfig) { }
-    public createSeans(params: { request: IRequest; sessionId: string }) {
-        const seansId = params.sessionId + Math.round(Math.random() * 100000).toString();
-        const controller = new SeansController({
-            seansId,
+    constructor(protected config: ISeancesManagerConfig) { }
+    public createSeance(params: { request: IRequest; sessionId: string }) {
+        const seanceId = params.sessionId + Math.round(Math.random() * 100000).toString();
+        const controller = new SeanceController({
+            seanceId,
             app: this.config.app,
             sessionId: params.sessionId,
             request: params.request,
@@ -30,30 +30,30 @@ class SeansesManager {
             controllersManager: this.config.controllersManager,
             pageCreator: this.config.pageCreator,
         });
-        this.seanses[seansId] = {
+        this.seances[seanceId] = {
             controller,
             sessionId: params.sessionId,
         };
         return controller;
     }
     public async connect(params: {
-        seansId: string;
+        seanceId: string;
         sessionId: string;
         socket: Socket;
     }) {
-        if (!this.seanses[params.seansId]) {
-            await this.restoreSeans();
+        if (!this.seances[params.seanceId]) {
+            await this.restoreSeance();
         }
-        this.seanses[params.seansId].socket = params.socket;
+        this.seances[params.seanceId].socket = params.socket;
     }
     public disconnect(socket: Socket) {
-        const seansid = Object.keys(this.seanses).find((n) => this.seanses[n].socket === socket);
-        if (seansid) {
-            this.seanses[seansid].socket = undefined;
+        const seanceId = Object.keys(this.seances).find((n) => this.seances[n].socket === socket);
+        if (seanceId) {
+            this.seances[seanceId].socket = undefined;
         }
     }
-    protected restoreSeans() {
+    protected restoreSeance() {
         // TODO
     }
 }
-export default SeansesManager;
+export default SeancesManager;

@@ -96,7 +96,7 @@ export interface ISessionContext {
     getItem(name: string): Promise<any>;
     setItem(name: string, value: any): Promise<void>;
 }
-export interface ISeansDumpInfo {
-    seansId: string;
+export interface ISeanceDumpInfo {
+    seanceId: string;
     page?: IPage;
 }
