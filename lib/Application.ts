@@ -32,20 +32,21 @@ class Application implements IApplication {
         if (this.environment === "production" && this.router) {
             return this.router;
         }
+        const routerConfig = {
+            app: this,
+            config: await this.getConfig(),
+            context: await this.getContext(),
+        };
         try {
             const routerPath = require.resolve(join(this.appPath, "Router"));
             if (this.environment === "development") {
                 delete require.cache[routerPath];
             }
             const RouterClass = require(routerPath).default;
-            this.router = new RouterClass();
+            this.router = new RouterClass(routerConfig);
         } catch (e) {
             if (!this.router) {
-                this.router = new FramesBasedRouter({
-                    app: this,
-                    config: await this.getConfig(),
-                    context: await this.getContext(),
-                });
+                this.router = new FramesBasedRouter(routerConfig);
             }
         }
         return this.router;
@@ -81,8 +82,13 @@ class Application implements IApplication {
     }
     public async getFrameControllerClass(frameName: string) {
         try {
-            return require(join(this.appPath, "frames", frameName, "controller")).default;
+            const path = join(this.appPath, "frames", frameName, "controller");
+            if (this.environment === "development") {
+                delete require.cache[path];
+            }
+            return require(path).default;
         } catch (e) {
+            console.log(e, e.stack);
             return FrameController;
         }
     }

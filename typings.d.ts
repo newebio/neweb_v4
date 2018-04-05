@@ -86,7 +86,7 @@ export interface IPageFrame {
     frameName: string;
     frameVersion?: string;
     modules: IPackInfoModule[];
-    params: string;
+    params: any;
     data: any;
     frames: {
         [index: string]: FrameId;
