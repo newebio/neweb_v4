@@ -88,7 +88,6 @@ class Application implements IApplication {
             }
             return require(path).default;
         } catch (e) {
-            console.log(e, e.stack);
             return FrameController;
         }
     }

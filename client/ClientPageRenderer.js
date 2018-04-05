@@ -70,7 +70,20 @@ class ClientPageRenderer {
             this.renderFrame(childFrameId);
             places[framePlace] = this.frames[childFrameId].element;
         });
-        frame.propsEmitter.emit(Object.assign({}, frame.propsEmitter.get(), places));
+        const oldProps = frame.propsEmitter.get();
+        const newProps = {};
+        Object.keys(oldProps).map((propName) => {
+            if (propName === "data" || propName === "dispatch" || propName === "navigate") {
+                newProps[propName] = oldProps[propName];
+            }
+            else if (places[propName]) {
+                newProps[propName] = places[propName];
+            }
+            else {
+                newProps[propName] = undefined;
+            }
+        });
+        frame.propsEmitter.emit(Object.assign({}, newProps, places));
     }
     updateFrame(pageFrame) {
         return __awaiter(this, void 0, void 0, function* () {
