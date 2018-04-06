@@ -54,6 +54,7 @@ class ControllersManager {
             session: params.session,
         });
         const data = await controller.getInitialData();
+        controller.emit(data);
         const dataCallback = (value: any) => {
             this.controllers[params.frameId].data = value;
         };
