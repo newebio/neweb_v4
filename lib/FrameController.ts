@@ -6,7 +6,7 @@ export default class FrameController<P, D, C> extends Onemitter<D> {
         super();
         this.onInit();
     }
-    public getInitialData() {
+    public async getInitialData(): Promise<D> {
         return this.config.data;
     }
     public onInit() {
