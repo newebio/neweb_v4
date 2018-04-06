@@ -21,7 +21,7 @@ export default class FrameController<P, D, C> extends Onemitter<D> {
     public dispose() {
         this.removeAllListeners();
     }
-    public onChangeParams() {
+    public async onChangeParams() {
         //
     }
 }
