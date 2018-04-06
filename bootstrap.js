@@ -27,7 +27,7 @@ const SessionsManager_1 = require("./lib/SessionsManager");
 const SessionsStorage_1 = require("./lib/SessionsStorage");
 const logger = console;
 const appPath = path_1.resolve(path_1.join(process.cwd(), "app"));
-const modulesPath = path_1.resolve(path_1.join(appPath, "cache", "modules"));
+const modulesPath = path_1.resolve(path_1.join(appPath, "..", "cache", "modules"));
 const environment = process.env.NODE_ENV === "production" ? "production" : "development";
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 (() => __awaiter(this, void 0, void 0, function* () {
@@ -51,7 +51,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
         app,
     });
     const sessionsStorage = new SessionsStorage_1.default({
-        sessionsPath: path_1.join(appPath, "sessions"),
+        sessionsPath: path_1.join(appPath, "..", "sessions"),
     });
     const sessionsDataStorage = new SessionsDataStorage_1.default({
         sessionsStorage,

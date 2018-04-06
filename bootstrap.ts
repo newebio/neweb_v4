@@ -17,7 +17,7 @@ import SessionsManager from "./lib/SessionsManager";
 import SessionsStorage from "./lib/SessionsStorage";
 const logger = console;
 const appPath = resolve(join(process.cwd(), "app"));
-const modulesPath = resolve(join(appPath, "cache", "modules"));
+const modulesPath = resolve(join(appPath, "..", "cache", "modules"));
 const environment = process.env.NODE_ENV === "production" ? "production" : "development";
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 (async () => {
@@ -41,7 +41,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
         app,
     });
     const sessionsStorage = new SessionsStorage({
-        sessionsPath: join(appPath, "sessions"),
+        sessionsPath: join(appPath, "..", "sessions"),
     });
     const sessionsDataStorage = new SessionsDataStorage({
         sessionsStorage,
