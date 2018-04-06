@@ -57,7 +57,7 @@ export interface IApplication {
 }
 export interface IFrameControllerConfig<P, D, C> {
     params: P;
-    data: D;
+    data?: D;
     context: C;
     session: ISessionContext;
     navigate: (url: string) => void;
