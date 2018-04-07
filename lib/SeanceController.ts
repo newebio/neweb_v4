@@ -1,6 +1,6 @@
 import { Socket } from "socket.io";
 import { IRemoteFrameControllerDispatchParams } from "../common";
-import { IApplication, IPage, IPageFrame, IRequest, IRoutePage } from "../typings";
+import { IApplication, IPage, IPageFrame, IRequest, IRoute, IRoutePage, IRouter } from "../typings";
 import ControllersManager from "./ControllersManager";
 import PageComparator from "./PageComparator";
 import PageCreator from "./PageCreator";
@@ -21,7 +21,19 @@ class SeanceController {
     protected clientIpAddress: string;
     protected currentPage: IPage;
     protected socket?: Socket;
-    constructor(protected config: ISeanceConfig) { }
+    protected router: IRouter;
+    constructor(protected config: ISeanceConfig) {
+
+    }
+    public async initialize() {
+        const RouterClass = await this.config.app.getRouterClass();
+        this.router = new RouterClass({
+            app: this.config.app,
+            session: await this.config.sessionsManager.getSessionContext(this.config.sessionId),
+            context: await this.config.app.getContext(),
+        });
+        this.router.onNewRoute((route) => this.onNewRoute(route));
+    }
     public connect(socket: Socket) {
         this.socket = socket;
         this.currentPage.frames.map((frame) => {
@@ -45,24 +57,12 @@ class SeanceController {
         this.socket = undefined;
     }
     public async navigate(url: string) {
-        const router = await this.config.app.getRouter();
-        const route = await router.resolve({
+        this.router.navigate({
             request: {
                 ...this.config.request,
                 url,
             },
-            session: await this.config.sessionsManager.getSessionContext(this.config.sessionId),
         });
-        if (route.type === "redirect") {
-            if (this.socket) {
-                this.socket.emit("redirect", route.url);
-            }
-            return;
-        }
-        if (route.type === "page") {
-            await this.loadPage(route.page);
-        }
-        return route;
     }
     public async loadPage(routePage: IRoutePage) {
         if (this.currentPage) {
@@ -76,6 +76,17 @@ class SeanceController {
             seanceId: this.config.seanceId,
             page: this.currentPage,
         };
+    }
+    protected async onNewRoute(route: IRoute) {
+        if (route.type === "redirect") {
+            if (this.socket) {
+                this.socket.emit("redirect", route.url);
+            }
+            return;
+        }
+        if (route.type === "page") {
+            await this.loadPage(route.page);
+        }
     }
     protected async replacePage(routePage: IRoutePage) {
         const page = await this.config.pageCreator.createPage(routePage);

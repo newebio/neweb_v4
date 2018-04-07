@@ -3,7 +3,7 @@ import { IPackInfo, ModulePacker } from "neweb-pack";
 import { join, resolve } from "path";
 import { promisify } from "util";
 import { INITIAL_VAR } from "../common";
-import { IApplication, IPageMetaInfo, IRouter } from "../typings";
+import { IApplication, IPageMetaInfo, IRouter, IRouterClass } from "../typings";
 import FrameController from "./FrameController";
 import FramesBasedRouter from "./FramesBasedRouter";
 export interface IApplicationConfig {
@@ -12,7 +12,6 @@ export interface IApplicationConfig {
     modulePacker: ModulePacker;
 }
 class Application implements IApplication {
-    protected router: IRouter;
     protected template = `<!doctype><html>
     <head><title>{%title%}</title>{%meta%}
     <meta charset="utf8" /></head><body>
@@ -28,28 +27,17 @@ class Application implements IApplication {
         this.appPath = configuration.appPath;
         this.environment = configuration.environment;
     }
-    public async getRouter(): Promise<IRouter> {
-        if (this.environment === "production" && this.router) {
-            return this.router;
-        }
-        const routerConfig = {
-            app: this,
-            config: await this.getConfig(),
-            context: await this.getContext(),
-        };
+    public async getRouterClass(): Promise<IRouterClass> {
         try {
             const routerPath = require.resolve(join(this.appPath, "Router"));
             if (this.environment === "development") {
                 delete require.cache[routerPath];
             }
             const RouterClass = require(routerPath).default;
-            this.router = new RouterClass(routerConfig);
+            return RouterClass;
         } catch (e) {
-            if (!this.router) {
-                this.router = new FramesBasedRouter(routerConfig);
-            }
+            return FramesBasedRouter;
         }
-        return this.router;
     }
     public async hasFrame(frameName: string) {
         return promisify(exists)(resolve(this.appPath, "frames", frameName));

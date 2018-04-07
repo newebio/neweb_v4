@@ -19,7 +19,7 @@ class SeancesManager {
         };
     } = {};
     constructor(protected config: ISeancesManagerConfig) { }
-    public createSeance(params: { request: IRequest; sessionId: string }) {
+    public async createSeance(params: { request: IRequest; sessionId: string }) {
         const seanceId = params.sessionId + Math.round(Math.random() * 100000).toString();
         const controller = new SeanceController({
             seanceId,
@@ -30,6 +30,7 @@ class SeancesManager {
             controllersManager: this.config.controllersManager,
             pageCreator: this.config.pageCreator,
         });
+        await controller.initialize();
         this.seances[seanceId] = {
             controller,
             sessionId: params.sessionId,

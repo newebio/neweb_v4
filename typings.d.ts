@@ -46,9 +46,17 @@ export interface IPageMeta {
     name: string;
     content: string;
 }
+export interface IRouterConfig {
+    context: any;
+    app: IApplication;
+    session: ISessionContext;
+}
+export interface IRouterClass {
+    new(config: IRouterConfig): IRouter;
+}
 export interface IApplication {
     fillTemplate: (html: string, meta: IPageMetaInfo, initialInfo: any) => Promise<string>;
-    getRouter: () => Promise<IRouter>;
+    getRouterClass: () => Promise<IRouterClass>;
     getContext: () => Promise<any>;
     getFrameControllerClass: (name: string) => Promise<IFrameControllerClass>;
     getFrameViewClass: (name: string) => Promise<React.ComponentClass<any>>;
@@ -64,7 +72,10 @@ export interface IFrameControllerConfig<P, D, C> {
 }
 type IFrameControllerClass = new (config: IFrameControllerConfig<any, any, any>) => IFrameController;
 export interface IRouter {
-    resolve: (params: { request: IRequest; session: ISessionContext; }) => Promise<IRoute>;
+    navigate: (params: { request: IRequest; }) => void | Promise<void>;
+    waitRoute: () => Promise<IRoute>;
+    onNewRoute: (cb: (route: IRoute) => any) => void | Promise<void>;
+    dispose: () => void | Promise<void>;
 }
 export interface ISession {
     id: string;
@@ -99,7 +110,7 @@ export interface IFrameController extends Onemitter<any> {
     onChangeParams: (params: any) => Promise<void>;
 }
 export interface ISessionContext {
-    getItem(name: string): Promise<any>;
+    getItem(name: string): Onemitter<any>;
     setItem(name: string, value: any): Promise<void>;
 }
 export interface ISeanceDumpInfo {

@@ -43,11 +43,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     const sessionsStorage = new SessionsStorage({
         sessionsPath: join(appPath, "..", "sessions"),
     });
-    const sessionsDataStorage = new SessionsDataStorage({
-        sessionsStorage,
-    });
     const sessionsManager = new SessionsManager({
-        sessionsDataStorage,
         sessionsStorage,
     });
     const pageCreator = new PageCreator({

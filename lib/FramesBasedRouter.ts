@@ -1,39 +1,46 @@
+import o, { Onemitter } from "onemitter";
 import { parse } from "url";
 import {
     IApplication, IRequest, IRoute, IRoutePage,
-    IRoutePageFrame, IRouter, ISessionContext,
+    IRoutePageFrame, IRouter,
 } from "./../typings";
 
-export interface IFramesBasedRouter<C, CONFIG> {
+export interface IFramesBasedRouter {
     app: IApplication;
-    context: C;
-    config: CONFIG;
 }
-class FramesBasedRouter<C, CONFIG> implements IRouter {
+class FramesBasedRouter implements IRouter {
     protected basePath = "/";
-    constructor(protected config: IFramesBasedRouter<C, CONFIG>) {
-
+    protected routeEmitter: Onemitter<IRoute>;
+    constructor(protected config: IFramesBasedRouter) {
+        this.routeEmitter = o();
     }
-    public async resolve({ request, session }: {
+    public async navigate({ request }: {
         request: IRequest;
-        session: ISessionContext;
-    }): Promise<IRoute> {
+    }) {
         try {
-            const page = await this.resolvePage({ url: request.url, session });
-            return {
+            const page = await this.resolvePage({ url: request.url });
+            this.routeEmitter.emit({
                 type: "page",
                 page,
-            };
+            });
         } catch (e) {
-            return {
+            this.routeEmitter.emit({
                 type: "notFound",
                 text: e.toString(),
-            };
+            });
         }
+    }
+    public onNewRoute(cb: (route: IRoute) => void) {
+        this.routeEmitter.addListener(cb);
+    }
+    public waitRoute() {
+        return this.routeEmitter.wait();
+    }
+    public dispose() {
+        this.routeEmitter.removeAllListeners();
     }
     protected async resolvePage({ url: rawUrl }: {
         url: string;
-        session: ISessionContext;
     }): Promise<IRoutePage> {
         const url = parse(rawUrl);
         if (!url.pathname) {

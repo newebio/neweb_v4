@@ -22,7 +22,6 @@ const PageCreator_1 = require("./lib/PageCreator");
 const PageRenderer_1 = require("./lib/PageRenderer");
 const SeancesManager_1 = require("./lib/SeancesManager");
 const Server_1 = require("./lib/Server");
-const SessionsDataStorage_1 = require("./lib/SessionsDataStorage");
 const SessionsManager_1 = require("./lib/SessionsManager");
 const SessionsStorage_1 = require("./lib/SessionsStorage");
 const logger = console;
@@ -53,11 +52,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     const sessionsStorage = new SessionsStorage_1.default({
         sessionsPath: path_1.join(appPath, "..", "sessions"),
     });
-    const sessionsDataStorage = new SessionsDataStorage_1.default({
-        sessionsStorage,
-    });
     const sessionsManager = new SessionsManager_1.default({
-        sessionsDataStorage,
         sessionsStorage,
     });
     const pageCreator = new PageCreator_1.default({

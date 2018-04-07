@@ -18,9 +18,15 @@ class Server {
     public async onRequest(request: IRequest, res: Response) {
         const sessionId =
             await this.config.sessionsManager.resolveSessionIdByRequest(request);
-        const router = await this.config.app.getRouter();
-        const route =
-            await router.resolve({ request, session: await this.config.sessionsManager.getSessionContext(sessionId) });
+        const RouterClass = await this.config.app.getRouterClass();
+        const router = new RouterClass({
+            app: this.config.app,
+            context: this.config.app.getContext(),
+            session: await this.config.sessionsManager.getSessionContext(sessionId),
+        });
+        router.navigate({ request });
+        const route = await router.waitRoute();
+        router.dispose();
         if (route.type === "redirect") {
             res.header("location", route.url);
             res.sendStatus(302);
