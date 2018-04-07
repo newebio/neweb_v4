@@ -50,6 +50,7 @@ export interface IRouterConfig {
     context: any;
     app: IApplication;
     session: ISessionContext;
+    request: IRequest;
 }
 export interface IRouterClass {
     new(config: IRouterConfig): IRouter;

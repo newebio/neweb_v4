@@ -23,7 +23,11 @@ class SessionContext implements ISessionContext {
             this.data[name] = o();
         }
         const data: any = {};
-        Object.keys(this.data).map((key) => data[key] = this.data[key].get());
+        Object.keys(this.data).map((key) => {
+            if (this.data[key].has()) {
+                data[key] = this.data[key].get();
+            }
+        });
         await this.config.onSave(data);
         this.data[name].emit(value);
     }

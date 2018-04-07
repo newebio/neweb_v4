@@ -23,6 +23,7 @@ class Server {
             app: this.config.app,
             context: this.config.app.getContext(),
             session: await this.config.sessionsManager.getSessionContext(sessionId),
+            request,
         });
         router.navigate({ request });
         const route = await router.waitRoute();

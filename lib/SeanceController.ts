@@ -1,3 +1,4 @@
+import isAbsoluteUrl = require("is-absolute-url");
 import { Socket } from "socket.io";
 import { IRemoteFrameControllerDispatchParams } from "../common";
 import { IApplication, IPage, IPageFrame, IRequest, IRoute, IRoutePage, IRouter } from "../typings";
@@ -31,6 +32,7 @@ class SeanceController {
             app: this.config.app,
             session: await this.config.sessionsManager.getSessionContext(this.config.sessionId),
             context: await this.config.app.getContext(),
+            request: this.config.request,
         });
         this.router.onNewRoute((route) => this.onNewRoute(route));
     }
@@ -79,9 +81,12 @@ class SeanceController {
     }
     protected async onNewRoute(route: IRoute) {
         if (route.type === "redirect") {
-            if (this.socket) {
+            const isAbsolute = isAbsoluteUrl(route.url);
+            if (this.socket && isAbsolute) {
                 this.socket.emit("redirect", route.url);
+                return;
             }
+            this.navigate(route.url);
             return;
         }
         if (route.type === "page") {
