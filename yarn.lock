@@ -4476,9 +4476,9 @@ once@^1.3.0, once@^1.3.1, once@^1.3.3, once@^1.4.0:
   dependencies:
     wrappy "1"
 
-onemitter@^0.2.3:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/onemitter/-/onemitter-0.2.3.tgz#9b10515c05d5bcb50814f1858e4f1f5dabcb4183"
+onemitter@^0.2.4:
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/onemitter/-/onemitter-0.2.4.tgz#446a71e4e934b6c5f2055a05db807803d15f7240"
 
 onetime@^1.0.0:
   version "1.1.0"
