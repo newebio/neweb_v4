@@ -26,5 +26,6 @@ const seance = new ClientSeance({
 });
 const logger = console;
 seance.initialize(initial).then(() => {
+    window.dispatchEvent(new Event("neweb-seans-initialized"));
     logger.log("Initialized");
 });
