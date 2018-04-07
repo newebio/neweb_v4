@@ -12,7 +12,6 @@ import PageCreator from "./lib/PageCreator";
 import PageRenderer from "./lib/PageRenderer";
 import SeancesManager from "./lib/SeancesManager";
 import Server from "./lib/Server";
-import SessionsDataStorage from "./lib/SessionsDataStorage";
 import SessionsManager from "./lib/SessionsManager";
 import SessionsStorage from "./lib/SessionsStorage";
 const logger = console;

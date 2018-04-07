@@ -3,7 +3,7 @@ import { IPackInfo, ModulePacker } from "neweb-pack";
 import { join, resolve } from "path";
 import { promisify } from "util";
 import { INITIAL_VAR } from "../common";
-import { IApplication, IPageMetaInfo, IRouter, IRouterClass } from "../typings";
+import { IApplication, IPageMetaInfo, IRouterClass } from "../typings";
 import FrameController from "./FrameController";
 import FramesBasedRouter from "./FramesBasedRouter";
 export interface IApplicationConfig {

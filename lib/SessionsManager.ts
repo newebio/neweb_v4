@@ -2,7 +2,6 @@ import { Response } from "express";
 import uid = require("uid-safe");
 import { IRequest, ISession, ISessionContext } from "../typings";
 import SessionContext from "./SessionContext";
-import SessionsDataStorage from "./SessionsDataStorage";
 import SessionsStorage from "./SessionsStorage";
 export interface ISessionsManagerConfig {
     sessionsStorage: SessionsStorage;

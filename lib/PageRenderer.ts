@@ -1,6 +1,7 @@
 import React = require("react");
 // tslint:disable-next-line:no-submodule-imports
 import ReactDOMServer = require("react-dom/server");
+import SeansStatusContext from "./../client/SeansStatusContext";
 import { IApplication, IPage, IPageFrame } from "./../typings";
 export interface IServerRendererConfig {
     app: IApplication;
@@ -24,7 +25,10 @@ class PageRenderer {
     }
     protected async renderFrame(frame: IPageFrame, children: any) {
         const ViewClass = await this.config.app.getFrameViewClass(frame.frameName);
-        return React.createElement(ViewClass, { params: frame.params, data: frame.data, children });
+        return React.createElement(SeansStatusContext.Provider, {
+            value: "initializing",
+            children: React.createElement(ViewClass, { params: frame.params, data: frame.data, children }),
+        });
     }
 }
 export default PageRenderer;

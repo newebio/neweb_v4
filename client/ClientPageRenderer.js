@@ -19,9 +19,6 @@ class ClientPageRenderer {
         this.config = config;
         this.rootChildrenEmitter = onemitter_1.default();
         this.frames = {};
-        this.rootElement = React.createElement(RootComponent_1.default, {
-            children: this.rootChildrenEmitter,
-        });
     }
     loadPage(page) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -49,9 +46,16 @@ class ClientPageRenderer {
     setMethods(params) {
         this.navigate = params.navigate;
         this.dispatch = params.dispatch;
+        this.seansStatusEmitter = params.seansStatusEmitter;
+        this.networkStatusEmitter = params.networkStatusEmitter;
     }
     initialize() {
         return __awaiter(this, void 0, void 0, function* () {
+            this.rootElement = React.createElement(RootComponent_1.default, {
+                children: this.rootChildrenEmitter,
+                seansStatusEmitter: this.seansStatusEmitter,
+                networkStatusEmitter: this.networkStatusEmitter,
+            });
             return new Promise((resolve) => {
                 this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
                 ReactDOM.hydrate(React.createElement(NavigateContext_1.default.Provider, {
@@ -77,7 +81,7 @@ class ClientPageRenderer {
         const oldProps = frame.propsEmitter.get();
         const newProps = {};
         Object.keys(oldProps).map((propName) => {
-            if (propName === "data" || propName === "dispatch" || propName === "navigate") {
+            if (propName === "data" || propName === "params" || propName === "dispatch" || propName === "navigate") {
                 newProps[propName] = oldProps[propName];
             }
             else if (places[propName]) {

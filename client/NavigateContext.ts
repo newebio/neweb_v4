@@ -1,3 +1,3 @@
 import React = require("react");
 
-export default (React as any).createContext("test");
+export default (React as any).createContext();
