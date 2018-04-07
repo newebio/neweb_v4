@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const React = require("react");
 const ReactDOM = require("react-dom");
 const common_1 = require("./../common");
+const NewebCommon = require("./../common");
 class ClientModulesManager {
     constructor(config) {
         this.config = config;
@@ -28,6 +29,13 @@ class ClientModulesManager {
             type: "npm",
             content: "",
             exports: ReactDOM,
+        });
+        this.modules.push({
+            name: "neweb",
+            version: undefined,
+            type: "npm",
+            content: "",
+            exports: NewebCommon,
         });
     }
     preloadModules(modules) {

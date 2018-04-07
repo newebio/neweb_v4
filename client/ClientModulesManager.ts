@@ -2,6 +2,7 @@ import { IPackInfoModule } from "neweb-pack";
 import React = require("react");
 import ReactDOM = require("react-dom");
 import { REQUIRE_FUNC_NAME } from "./../common";
+import NewebCommon = require("./../common");
 export interface IModulesManagerConfig {
     address: string;
 }
@@ -27,6 +28,13 @@ class ClientModulesManager {
             type: "npm",
             content: "",
             exports: ReactDOM,
+        });
+        this.modules.push({
+            name: "neweb",
+            version: undefined,
+            type: "npm",
+            content: "",
+            exports: NewebCommon,
         });
     }
     public async preloadModules(modules: IPackInfoModule[]) {

@@ -35,7 +35,7 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     const httpServer = http_1.createServer(expressApp);
     const modulePacker = new neweb_pack_1.ModulePacker({
         appRoot: appPath,
-        excludedModules: ["react", "react-dom"],
+        excludedModules: ["react", "react-dom", "neweb"],
         modulesPath,
         REQUIRE_FUNC_NAME: common_1.REQUIRE_FUNC_NAME,
     });

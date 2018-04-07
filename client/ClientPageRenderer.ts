@@ -4,6 +4,7 @@ import ReactDOM = require("react-dom");
 import { IRemoteFrameControllerDataParams, IRemoteFrameControllerDispatchParams } from "../common";
 import { IPage, IPageFrame } from "./../typings";
 import ClientApp from "./ClientApp";
+import NavigateContext from "./NavigateContext";
 import ReactOnemitter from "./ReactOnemitter";
 import RootComponent from "./RootComponent";
 
@@ -58,7 +59,10 @@ class ClientPageRenderer {
     public async initialize() {
         return new Promise((resolve) => {
             this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
-            ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
+            ReactDOM.hydrate(React.createElement(NavigateContext.Provider, {
+                value: this.navigate,
+                children: this.rootElement,
+            }), this.config.rootHtmlElement, resolve);
         });
     }
     public emitFrameControllerData(params: IRemoteFrameControllerDataParams) {

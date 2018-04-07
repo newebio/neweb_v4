@@ -14,3 +14,5 @@ export interface IRemoteFrameControllerDispatchParams {
 export interface IRemoteNewPageParams {
     page: IPage;
 }
+export { default as NavigateContext } from "./client/NavigateContext";
+export { default as Link } from "./client/Link";

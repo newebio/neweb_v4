@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const onemitter_1 = require("onemitter");
 const React = require("react");
 const ReactDOM = require("react-dom");
+const NavigateContext_1 = require("./NavigateContext");
 const ReactOnemitter_1 = require("./ReactOnemitter");
 const RootComponent_1 = require("./RootComponent");
 class ClientPageRenderer {
@@ -53,7 +54,10 @@ class ClientPageRenderer {
         return __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve) => {
                 this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);
-                ReactDOM.hydrate(this.rootElement, this.config.rootHtmlElement, resolve);
+                ReactDOM.hydrate(React.createElement(NavigateContext_1.default.Provider, {
+                    value: this.navigate,
+                    children: this.rootElement,
+                }), this.config.rootHtmlElement, resolve);
             });
         });
     }
