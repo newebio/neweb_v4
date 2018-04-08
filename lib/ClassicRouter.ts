@@ -100,7 +100,9 @@ export function RouteWithRedirectOn(params: {
 class ClassicRouter implements IRouter {
     protected routes: IRouteHandler[] = [];
     protected routeEmitter = o<IRoute>();
+    protected currentRequest: IRequest;
     constructor(protected config: IRouterConfig) {
+        this.currentRequest = this.config.request;
         this.onInit();
     }
     public onInit() {
@@ -110,14 +112,15 @@ class ClassicRouter implements IRouter {
         this.routes.push(route);
     }
     public async navigate(params: IRouterNavigateParams) {
+        this.currentRequest = params.request;
         for (const routeHandler of this.routes) {
             const route = routeHandler(params.request, {});
             if (route) {
-                this.routeEmitter.emit(route);
+                this.emitRoute(route);
                 return;
             }
         }
-        this.routeEmitter.emit({
+        this.emitRoute({
             type: "notFound",
             text: "Unknown request " + params.request.url,
         });
@@ -130,6 +133,12 @@ class ClassicRouter implements IRouter {
     }
     public async onNewRoute(cb: any) {
         this.routeEmitter.on(cb);
+    }
+    protected async emitRoute(route: IRoute) {
+        if (this.routeEmitter.has() && JSON.stringify(this.routeEmitter.get()) === JSON.stringify(route)) {
+            return;
+        }
+        this.routeEmitter.emit(route);
     }
 }
 export default ClassicRouter;
