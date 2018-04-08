@@ -30,6 +30,12 @@ const modulesPath = path_1.resolve(path_1.join(appPath, "..", "cache", "modules"
 const environment = process.env.NODE_ENV === "production" ? "production" : "development";
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 (() => __awaiter(this, void 0, void 0, function* () {
+    process.on("uncaughtException", (e) => {
+        logger.log("uncaughtException", e);
+    });
+    process.on("unhandledRejection", (e) => {
+        logger.log("unhandledRejection", e);
+    });
     const expressApp = express();
     const httpServer = http_1.createServer(expressApp);
     const modulePacker = new neweb_pack_1.ModulePacker({

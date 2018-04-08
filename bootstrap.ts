@@ -20,6 +20,13 @@ const modulesPath = resolve(join(appPath, "..", "cache", "modules"));
 const environment = process.env.NODE_ENV === "production" ? "production" : "development";
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
 (async () => {
+    process.on("uncaughtException", (e) => {
+        logger.log("uncaughtException", e);
+    });
+    process.on("unhandledRejection", (e) => {
+        logger.log("unhandledRejection", e);
+    });
+
     const expressApp = express();
     const httpServer = createServer(expressApp);
     const modulePacker = new ModulePacker({
