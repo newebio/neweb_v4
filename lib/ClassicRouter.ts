@@ -1,4 +1,4 @@
-import o, { Onemitter } from "onemitter";
+import o from "onemitter";
 import querystring = require("querystring");
 import { parse } from "url";
 import { IRequest, IRoute, IRouter, IRouterConfig, IRouterNavigateParams } from "./..";
@@ -82,11 +82,12 @@ export function PageRouteByFrame(params: {
         };
     };
 }
-export function RouteWithRedirectOn(params: {
-    condition: (request: IRequest, context: any) => boolean;
-    next: IRouteHandler;
-    url: (request: IRequest, context: any) => string;
-}): IRouteHandler {
+export function RouteWithRedirectOn(
+    params: {
+        condition: (request: IRequest, context: any) => boolean;
+        url: (request: IRequest, context: any) => string;
+    },
+    next: IRouteHandler): IRouteHandler {
     return (request: IRequest, context: any) => {
         if (params.condition(request, context)) {
             return {
@@ -94,7 +95,7 @@ export function RouteWithRedirectOn(params: {
                 url: params.url(request, context),
             };
         }
-        return params.next(request, context);
+        return next(request, context);
     };
 }
 class ClassicRouter implements IRouter {
