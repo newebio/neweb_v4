@@ -84,10 +84,6 @@ class SessionsManager {
             },
         });
         return context;
-        /*return {
-            getItem: (name: string) => this.config.sessionsDataStorage.getItem(id, name),
-            setItem: (name: string, value: any) => this.config.sessionsDataStorage.setItem(id, name, value),
-        };*/
     }
     protected async getSessionById(sessionId: string) {
         if (!this.sessions[sessionId]) {

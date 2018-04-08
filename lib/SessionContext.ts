@@ -28,6 +28,7 @@ class SessionContext implements ISessionContext {
                 data[key] = this.data[key].get();
             }
         });
+        data[name] = value;
         await this.config.onSave(data);
         this.data[name].emit(value);
     }
