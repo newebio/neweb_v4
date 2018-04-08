@@ -48,6 +48,7 @@ class ClientPageRenderer {
         this.dispatch = params.dispatch;
         this.seansStatusEmitter = params.seansStatusEmitter;
         this.networkStatusEmitter = params.networkStatusEmitter;
+        this.historyContext = params.historyContext;
     }
     initialize() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -55,6 +56,7 @@ class ClientPageRenderer {
                 children: this.rootChildrenEmitter,
                 seansStatusEmitter: this.seansStatusEmitter,
                 networkStatusEmitter: this.networkStatusEmitter,
+                historyContext: this.historyContext,
             });
             return new Promise((resolve) => {
                 this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);

@@ -1,5 +1,5 @@
 import o from "onemitter";
-import { IPage, ISeanceDumpInfo } from "./..";
+import { IHistoryContext, IPage, ISeanceDumpInfo } from "./..";
 import {
     IRemoteFrameControllerDataParams,
     IRemoteFrameControllerDispatchParams, IRemoteNewPageParams,
@@ -17,15 +17,29 @@ export interface IClientSeanceConfig {
 class ClientSeance {
     protected seansStatusEmitter = o();
     protected networkStatusEmitter = o<string>();
+    protected seansId: string;
+    protected historyContext: IHistoryContext;
     constructor(protected config: IClientSeanceConfig) { }
     public async initialize(initialInfo: ISeanceDumpInfo) {
+        this.seansId = initialInfo.seanceId;
         this.seansStatusEmitter.emit("initializing");
         this.networkStatusEmitter.emit(this.config.socket.connected ? "connected" : "disconnected");
+        this.historyContext = {
+            push: (url: string) => {
+                history.pushState(url, "", url);
+                this.navigate(url);
+            },
+            replace: (url: string) => {
+                history.replaceState(url, "", url);
+                this.navigate(url);
+            },
+        };
         this.config.pageRenderer.setMethods({
             dispatch: (params: IRemoteFrameControllerDispatchParams) => this.dispatch(params),
             navigate: (url: string) => this.navigate(url),
             seansStatusEmitter: this.seansStatusEmitter,
             networkStatusEmitter: this.networkStatusEmitter,
+            historyContext: this.historyContext,
         });
         if (initialInfo.page) {
             await this.loadPage(initialInfo.page);
@@ -45,12 +59,16 @@ class ClientSeance {
         });
         this.config.socket.on("new-page", async (params: IRemoteNewPageParams) => {
             await this.config.pageRenderer.newPage(params.page);
-            history.replaceState(params.page, "", params.page.url);
+            history.replaceState(params.page.url, "", params.page.url);
             this.seansStatusEmitter.emit("ready");
         });
         await new Promise((resolve) => {
             this.config.socket.emit("initialize", { seanceId: this.config.seanceId }, resolve);
         });
+        history.replaceState(window.location.href, "", window.location.href);
+        window.onpopstate = (e) => {
+            this.navigate(e.state);
+        };
         this.seansStatusEmitter.emit("ready");
     }
     public navigate(url: string) {

@@ -17,13 +17,25 @@ class ClientSeance {
     }
     initialize(initialInfo) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.seansId = initialInfo.seanceId;
             this.seansStatusEmitter.emit("initializing");
             this.networkStatusEmitter.emit(this.config.socket.connected ? "connected" : "disconnected");
+            this.historyContext = {
+                push: (url) => {
+                    history.pushState(url, "", url);
+                    this.navigate(url);
+                },
+                replace: (url) => {
+                    history.replaceState(url, "", url);
+                    this.navigate(url);
+                },
+            };
             this.config.pageRenderer.setMethods({
                 dispatch: (params) => this.dispatch(params),
                 navigate: (url) => this.navigate(url),
                 seansStatusEmitter: this.seansStatusEmitter,
                 networkStatusEmitter: this.networkStatusEmitter,
+                historyContext: this.historyContext,
             });
             if (initialInfo.page) {
                 yield this.loadPage(initialInfo.page);
@@ -43,12 +55,16 @@ class ClientSeance {
             });
             this.config.socket.on("new-page", (params) => __awaiter(this, void 0, void 0, function* () {
                 yield this.config.pageRenderer.newPage(params.page);
-                history.replaceState(params.page, "", params.page.url);
+                history.replaceState(params.page.url, "", params.page.url);
                 this.seansStatusEmitter.emit("ready");
             }));
             yield new Promise((resolve) => {
                 this.config.socket.emit("initialize", { seanceId: this.config.seanceId }, resolve);
             });
+            history.replaceState(window.location.href, "", window.location.href);
+            window.onpopstate = (e) => {
+                this.navigate(e.state);
+            };
             this.seansStatusEmitter.emit("ready");
         });
     }

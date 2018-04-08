@@ -1,10 +1,12 @@
 import { Onemitter } from "onemitter";
 import React = require("react");
-import { NetworkStatusContext, SeansStatusContext } from "./../common";
+import { HistoryContext, NetworkStatusContext, SeansStatusContext } from "./../common";
+import { IHistoryContext } from "./../typings";
 class RootComponent extends React.Component<{
     children: Onemitter<any>;
     seansStatusEmitter: Onemitter<any>;
     networkStatusEmitter: Onemitter<any>;
+    historyContext: IHistoryContext;
 }, {
         children: any;
         seansStatus: string;
@@ -45,12 +47,15 @@ class RootComponent extends React.Component<{
         this.props.seansStatusEmitter.off(this.seansStatusCallback);
     }
     public render() {
-        return React.createElement(NetworkStatusContext.Provider, {
-            children: React.createElement(SeansStatusContext.Provider, {
-                value: this.state.seansStatus,
-                children: this.state.children,
+        return React.createElement(HistoryContext.Provider, {
+            value: this.props.historyContext,
+            children: React.createElement(NetworkStatusContext.Provider, {
+                children: React.createElement(SeansStatusContext.Provider, {
+                    value: this.state.seansStatus,
+                    children: this.state.children,
+                }),
+                value: this.state.networkStatus,
             }),
-            value: this.state.networkStatus,
         });
     }
 }

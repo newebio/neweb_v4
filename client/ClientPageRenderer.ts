@@ -28,6 +28,7 @@ class ClientPageRenderer {
         [index: string]: IClientPageFrame;
     } = {};
     protected currentPage: IPage;
+    protected historyContext: any;
     constructor(protected config: IClientPageRendererConfig) {
 
     }
@@ -54,17 +55,20 @@ class ClientPageRenderer {
         dispatch: (params: IRemoteFrameControllerDispatchParams) => Promise<void>;
         seansStatusEmitter: Onemitter<any>;
         networkStatusEmitter: Onemitter<any>;
+        historyContext: any;
     }) {
         this.navigate = params.navigate;
         this.dispatch = params.dispatch;
         this.seansStatusEmitter = params.seansStatusEmitter;
         this.networkStatusEmitter = params.networkStatusEmitter;
+        this.historyContext = params.historyContext;
     }
     public async initialize() {
         this.rootElement = React.createElement(RootComponent, {
             children: this.rootChildrenEmitter,
             seansStatusEmitter: this.seansStatusEmitter,
             networkStatusEmitter: this.networkStatusEmitter,
+            historyContext: this.historyContext,
         });
         return new Promise((resolve) => {
             this.rootChildrenEmitter.emit(this.frames[this.currentPage.rootFrame].element);

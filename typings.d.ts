@@ -127,3 +127,7 @@ export interface IViewProps<P, D> {
     navigate: (url: string) => void;
     dispatch: (actionName: string, ...args: any[]) => Promise<void>;
 }
+export interface IHistoryContext {
+    push(url: string): void;
+    replace(url: string): void;
+}

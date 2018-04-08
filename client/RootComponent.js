@@ -38,12 +38,15 @@ class RootComponent extends React.Component {
         this.props.seansStatusEmitter.off(this.seansStatusCallback);
     }
     render() {
-        return React.createElement(common_1.NetworkStatusContext.Provider, {
-            children: React.createElement(common_1.SeansStatusContext.Provider, {
-                value: this.state.seansStatus,
-                children: this.state.children,
+        return React.createElement(common_1.HistoryContext.Provider, {
+            value: this.props.historyContext,
+            children: React.createElement(common_1.NetworkStatusContext.Provider, {
+                children: React.createElement(common_1.SeansStatusContext.Provider, {
+                    value: this.state.seansStatus,
+                    children: this.state.children,
+                }),
+                value: this.state.networkStatus,
             }),
-            value: this.state.networkStatus,
         });
     }
 }
