@@ -1,15 +1,19 @@
 import { exists, readFile } from "fs";
-import { IPackInfo, ModulePacker } from "neweb-pack";
+import { IPackInfo } from "neweb-pack";
 import { join, resolve } from "path";
 import { promisify } from "util";
+import withError from "with-error";
 import { INITIAL_VAR } from "../common";
 import { IApplication, IPageMetaInfo, IRouterClass } from "../typings";
+import ClassicRouter from "./ClassicRouter";
 import FrameController from "./FrameController";
-import FramesBasedRouter from "./FramesBasedRouter";
+
 export interface IApplicationConfig {
     environment: "production" | "development";
     appPath: string;
-    modulePacker: ModulePacker;
+    modulePacker: {
+        addLocalPackage(path: string): Promise<IPackInfo>;
+    };
 }
 class Application implements IApplication {
     protected template = `<!doctype><html>
@@ -27,17 +31,18 @@ class Application implements IApplication {
         this.appPath = configuration.appPath;
         this.environment = configuration.environment;
     }
-    public async getRouterClass(): Promise<IRouterClass> {
-        try {
-            const routerPath = require.resolve(join(this.appPath, "Router"));
-            if (this.environment === "development") {
-                delete require.cache[routerPath];
-            }
-            const RouterClass = require(routerPath).default;
-            return RouterClass;
-        } catch (e) {
-            return FramesBasedRouter;
+    public async requireModule(modulePath: string) {
+        const { error, result: path } = withError(() => require.resolve(join(this.appPath, modulePath)));
+        if (error) {
+            return;
         }
+        if (this.environment === "development") {
+            delete require.cache[path];
+        }
+        return require(path).default;
+    }
+    public async getRouterClass(): Promise<IRouterClass> {
+        return (await this.requireModule("Router")) || ClassicRouter;
     }
     public async hasFrame(frameName: string) {
         return promisify(exists)(resolve(this.appPath, "frames", frameName));
@@ -46,45 +51,25 @@ class Application implements IApplication {
         if (typeof (this.context) !== "undefined") {
             return this.context;
         }
-        try {
-            const ContextClass = require(join(this.appPath, "Context")).default;
-            this.context = new ContextClass({
-                config: await this.getConfig(),
-            });
-        } catch (e) {
-            this.context = {};
-        }
+        const ContextClass = await this.requireModule("Context");
+        this.context = ContextClass ? new ContextClass({
+            config: await this.getConfig(),
+        }) : {};
         return this.context;
     }
     public async getConfig() {
         if (typeof (this.config) !== "undefined") {
             return this.config;
         }
-        try {
-            const ConfigClass = require(join(this.appPath, "Config." + this.environment)).default;
-            this.config = new ConfigClass();
-        } catch (e) {
-            this.config = {};
-        }
+        const ConfigClass = await this.requireModule("Config." + this.environment);
+        this.config = ConfigClass ? new ConfigClass() : {};
         return this.config;
     }
     public async getFrameControllerClass(frameName: string) {
-        try {
-            const path = join(this.appPath, "frames", frameName, "controller");
-            if (this.environment === "development") {
-                delete require.cache[path];
-            }
-            return require(path).default;
-        } catch (e) {
-            return FrameController;
-        }
+        return (await this.requireModule("frames/" + frameName + "/controller")) || FrameController;
     }
     public async getFrameViewClass(frameName: string) {
-        try {
-            return require(join(this.appPath, "frames", frameName, "view")).default;
-        } catch (e) {
-            return () => null;
-        }
+        return (await this.requireModule("frames/" + frameName + "/view")) || (() => null);
     }
     public async getFrameViewModulePackInfo(frameName: string): Promise<IPackInfo> {
         return this.configuration.modulePacker.addLocalPackage(
