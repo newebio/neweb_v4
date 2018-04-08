@@ -83,15 +83,15 @@ export function PageRouteByFrame(params: {
     };
 }
 export function RouteWithRedirectOn(params: {
-    condition: Onemitter<boolean>;
+    condition: (request: IRequest, context: any) => boolean;
     next: IRouteHandler;
-    url: (request: IRequest) => string;
+    url: (request: IRequest, context: any) => string;
 }): IRouteHandler {
     return (request: IRequest, context: any) => {
-        if (params.condition.has() && !!params.condition.get()) {
+        if (params.condition(request, context)) {
             return {
                 type: "redirect",
-                url: params.url(request),
+                url: params.url(request, context),
             };
         }
         return params.next(request, context);
