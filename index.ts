@@ -1,5 +1,7 @@
 export { default as FrameController } from "./lib/FrameController";
 export { default as FramesBasedRouter } from "./lib/FramesBasedRouter";
+export { default as ClassicRouter } from "./lib/ClassicRouter";
+export * from "./lib/ClassicRouter";
 export * from "./lib/FramesBasedRouter";
 export * from "./typings";
 

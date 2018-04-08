@@ -78,6 +78,9 @@ export interface IRouter {
     onNewRoute: (cb: (route: IRoute) => any) => void | Promise<void>;
     dispose: () => void | Promise<void>;
 }
+export interface IRouterNavigateParams {
+    request: IRequest;
+}
 export interface ISession {
     id: string;
     hash: string;
