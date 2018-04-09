@@ -97,7 +97,9 @@ class ClientPageRenderer {
         const oldProps = frame.propsEmitter.get();
         const newProps: any = {};
         Object.keys(oldProps).map((propName) => {
-            if (propName === "data" || propName === "params" || propName === "dispatch" || propName === "navigate") {
+            if (propName === "data"
+                || propName === "history"
+                || propName === "params" || propName === "dispatch" || propName === "navigate") {
                 newProps[propName] = oldProps[propName];
             } else if (places[propName]) {
                 newProps[propName] = places[propName];
@@ -125,6 +127,7 @@ class ClientPageRenderer {
             data,
             params,
             navigate: this.navigate,
+            history: this.historyContext,
             dispatch: (actionName: string, ...args: any[]) => this.dispatch({
                 frameId: pageFrame.frameId,
                 actionName,
