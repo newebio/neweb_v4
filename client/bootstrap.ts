@@ -3,6 +3,7 @@ import { INITIAL_VAR } from "../common";
 import { ISeanceDumpInfo } from "./../typings";
 import ClientApp from "./ClientApp";
 import ClientModulesManager from "./ClientModulesManager";
+import ClientPageMetaManager from "./ClientPageMetaManager";
 import ClientPageRenderer from "./ClientPageRenderer";
 import ClientSeance from "./ClientSeance";
 
@@ -18,11 +19,13 @@ const pageRenderer = new ClientPageRenderer({
     app,
     rootHtmlElement: document.getElementById("root"),
 });
+const pageMetaManager = new ClientPageMetaManager();
 const seance = new ClientSeance({
     app,
     seanceId: initial.seanceId,
     socket,
     pageRenderer,
+    pageMetaManager,
 });
 const logger = console;
 seance.initialize(initial).then(() => {

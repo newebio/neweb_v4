@@ -1,9 +1,10 @@
 import o from "onemitter";
 import querystring = require("querystring");
 import { parse } from "url";
-import { IRequest, IRoute, IRouter, IRouterConfig, IRouterNavigateParams } from "./..";
+import { IPage, IPageRoute, IRequest, IRoute, IRouter, IRouterConfig, IRouterNavigateParams } from "./..";
 
 export type IRouteHandler = (request: IRequest, context: any) => null | IRoute;
+export type IRoutePageHandler = (request: IRequest, context: any) => IPageRoute;
 export function MatchedRoute(opts: { path: string; }, next: IRouteHandler): IRouteHandler {
     return (request: IRequest, context) => {
         const paths = opts.path.split("/");
@@ -64,12 +65,23 @@ export function PageRouteWithParent(
         };
     };
 }
+export function PageRouteWithAfterLoad(
+    params: {
+        afterLoad: (page: IPage) => void | Promise<void>;
+    },
+    handler: IRoutePageHandler): IRoutePageHandler {
+    return (request: IRequest, context: any) => {
+        const page = handler(request, context);
+        page.page.afterLoad = params.afterLoad;
+        return page;
+    };
+}
 export function PageRouteByFrame(params: {
     frameName: string;
     params?: (request: IRequest, context: any) => any;
-}): IRouteHandler {
+}): IRoutePageHandler {
     return (request: IRequest, context: any) => {
-        return {
+        const page: IPageRoute = {
             type: "page",
             page: {
                 rootFrame: {
@@ -80,6 +92,7 @@ export function PageRouteByFrame(params: {
                 url: request.url,
             },
         };
+        return page;
     };
 }
 export function RouteWithRedirectOn(

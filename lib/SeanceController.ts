@@ -105,7 +105,9 @@ class SeanceController {
             await controller.onChangeParams(frame.params);
         }));
         this.currentPage = info.page;
-
+        if (routePage.afterLoad) {
+            await routePage.afterLoad(this.currentPage);
+        }
         if (this.socket) {
             this.socket.emit("new-page", {
                 page: info.page,
@@ -115,6 +117,9 @@ class SeanceController {
     protected async createPage(routePage: IRoutePage) {
         const page = await this.config.pageCreator.createPage(routePage);
         await Promise.all(page.frames.map(async (frame) => this.createController(frame)));
+        if (routePage.afterLoad) {
+            await routePage.afterLoad(page);
+        }
         return page;
     }
     protected async createController(frame: IPageFrame) {

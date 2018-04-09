@@ -55,7 +55,8 @@ class ClientSeance {
             });
             this.config.socket.on("new-page", (params) => __awaiter(this, void 0, void 0, function* () {
                 yield this.config.pageRenderer.newPage(params.page);
-                history.replaceState(params.page.url, "", params.page.url);
+                history.replaceState(params.page.url, params.page.title || "", params.page.url);
+                this.config.pageMetaManager.update(params.page);
                 this.seansStatusEmitter.emit("ready");
             }));
             yield new Promise((resolve) => {

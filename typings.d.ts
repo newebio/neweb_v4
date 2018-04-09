@@ -30,6 +30,7 @@ export interface IRoutePage {
     };
     url: string;
     rootFrame: IRoutePageFrame;
+    afterLoad?: (page: IPage) => void | Promise<void>,
 }
 export interface IRoutePageFrame {
     name: string;

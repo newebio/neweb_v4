@@ -5,6 +5,7 @@ import {
     IRemoteFrameControllerDispatchParams, IRemoteNewPageParams,
 } from "./../common";
 import ClientApp from "./ClientApp";
+import ClientPageMetaManager from "./ClientPageMetaManager";
 import ClientPageRenderer from "./ClientPageRenderer";
 export interface IClientSeanceConfig {
     seanceId: string;
@@ -13,6 +14,7 @@ export interface IClientSeanceConfig {
 export interface IClientSeanceConfig {
     app: ClientApp;
     pageRenderer: ClientPageRenderer;
+    pageMetaManager: ClientPageMetaManager;
 }
 class ClientSeance {
     protected seansStatusEmitter = o();
@@ -59,7 +61,8 @@ class ClientSeance {
         });
         this.config.socket.on("new-page", async (params: IRemoteNewPageParams) => {
             await this.config.pageRenderer.newPage(params.page);
-            history.replaceState(params.page.url, "", params.page.url);
+            history.replaceState(params.page.url, params.page.title || "", params.page.url);
+            this.config.pageMetaManager.update(params.page);
             this.seansStatusEmitter.emit("ready");
         });
         await new Promise((resolve) => {
