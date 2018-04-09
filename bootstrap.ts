@@ -1,6 +1,7 @@
 import cookieParser = require("cookie-parser");
 import express = require("express");
 import { createServer } from "http";
+import { Interactive } from "neweb-cli";
 import { ModulePacker } from "neweb-pack";
 import { join, resolve } from "path";
 import SocketIOServer = require("socket.io");
@@ -93,5 +94,12 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
             return;
         }
         logger.log("Started at " + port);
+
+        if (environment === "development") {
+            const interactive = new Interactive({
+                appPath,
+            });
+            interactive.start();
+        }
     });
 })();

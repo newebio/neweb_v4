@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const cookieParser = require("cookie-parser");
 const express = require("express");
 const http_1 = require("http");
+const neweb_cli_1 = require("neweb-cli");
 const neweb_pack_1 = require("neweb-pack");
 const path_1 = require("path");
 const SocketIOServer = require("socket.io");
@@ -102,5 +103,11 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
             return;
         }
         logger.log("Started at " + port);
+        if (environment === "development") {
+            const interactive = new neweb_cli_1.Interactive({
+                appPath,
+            });
+            interactive.start();
+        }
     });
 }))();
