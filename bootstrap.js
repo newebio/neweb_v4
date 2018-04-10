@@ -17,19 +17,15 @@ const path_1 = require("path");
 const SocketIOServer = require("socket.io");
 const common_1 = require("./common");
 const Application_1 = require("./lib/Application");
-const ControllersManager_1 = require("./lib/ControllersManager");
+const GlobalStore_1 = require("./lib/GlobalStore");
 const ModulesServer_1 = require("./lib/ModulesServer");
-const PageCreator_1 = require("./lib/PageCreator");
-const PageRenderer_1 = require("./lib/PageRenderer");
-const SeancesManager_1 = require("./lib/SeancesManager");
 const Server_1 = require("./lib/Server");
-const SessionsManager_1 = require("./lib/SessionsManager");
-const SessionsStorage_1 = require("./lib/SessionsStorage");
 const logger = console;
 const appPath = path_1.resolve(path_1.join(process.cwd(), "app"));
 const modulesPath = path_1.resolve(path_1.join(appPath, "..", "cache", "modules"));
 const environment = process.env.NODE_ENV === "production" ? "production" : "development";
-const port = typeof (process.env.PORT) !== "undefined" ? parseInt(process.env.PORT, 10) : 5000;
+const rawPort = process.env.PORT;
+const port = rawPort ? parseInt(rawPort, 10) : 5000;
 (() => __awaiter(this, void 0, void 0, function* () {
     process.on("uncaughtException", (e) => {
         logger.log("uncaughtException", e);
@@ -50,33 +46,47 @@ const port = typeof (process.env.PORT) !== "undefined" ? parseInt(process.env.PO
         appPath,
         modulePacker,
     });
-    const pageRenderer = new PageRenderer_1.default({
-        app,
-    });
-    const controllersManager = new ControllersManager_1.default({
-        app,
-    });
-    const sessionsStorage = new SessionsStorage_1.default({
-        sessionsPath: path_1.join(appPath, "..", "sessions"),
-    });
-    const sessionsManager = new SessionsManager_1.default({
-        sessionsStorage,
-    });
-    const pageCreator = new PageCreator_1.default({
-        app,
-    });
-    const seancesManager = new SeancesManager_1.default({
-        app,
-        controllersManager,
-        pageCreator,
-        sessionsManager,
+    const store = new GlobalStore_1.default({
+        storePath: __dirname + "/../tmp",
+        dataTypes: {
+            "session": {
+                lifetime: 1000,
+                persistant: false,
+            },
+            "session-data": {
+                lifetime: 1000,
+                persistant: false,
+            },
+            "frame-controller": { lifetime: 1000, persistant: false },
+            "frame-controller-data": { lifetime: 1000, persistant: false },
+            "seance": { lifetime: 1000, persistant: false },
+            "seance-socket": { lifetime: 1000, persistant: false },
+            "seance-current-page": { lifetime: 1000, persistant: false },
+            "seance-request": { lifetime: 1000, persistant: false },
+        },
+        objectsTypes: {
+            "frame-controller-data-callback": {
+                lifetime: 1000,
+            },
+            "frame-controller-object": {
+                lifetime: 1000,
+            },
+            "socket": {
+                lifetime: 1000,
+            },
+            "router": {
+                lifetime: 1000,
+            },
+            "router-route-callback": {
+                lifetime: 1000,
+            },
+            "socket-event-callback": { lifetime: 1000 },
+        },
     });
     const server = new Server_1.default({
         app,
         logger: console,
-        pageRenderer,
-        seancesManager,
-        sessionsManager,
+        store,
     });
     expressApp.get("/bundle.js", (_, res) => res.sendFile(path_1.resolve(__dirname + "/dist/bundle.js")));
     const modulesServer = new ModulesServer_1.default({

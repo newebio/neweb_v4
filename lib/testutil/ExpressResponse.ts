@@ -3,6 +3,7 @@ class ExpressResponse {
     protected code: number = 0;
     protected body: string = "";
     protected headers: any = {};
+    protected cookies: any = {};
     constructor() {
         ExpressResponse.instance = this;
     }
@@ -20,11 +21,15 @@ class ExpressResponse {
             },
         };
     }
+    public cookie(name: string, value: string) {
+        this.cookies[name] = value;
+    }
     public getResponse() {
         return {
             statusCode: this.code,
             body: this.body,
             headers: this.headers,
+            cookies: this.cookies,
         };
     }
 }

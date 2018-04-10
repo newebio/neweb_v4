@@ -1,16 +1,14 @@
-import cookieParser = require("cookie-parser");
 import { Response } from "express";
 import { Socket } from "socket.io";
-import { IApplication, IRequest } from "../typings";
+import { IApplication, IRequest, ISeanceDumpInfo, NewebGlobalStore } from "../typings";
 import PageRenderer from "./PageRenderer";
 import SeancesManager from "./SeancesManager";
 import SessionsManager from "./SessionsManager";
+import { parseRequestCookies } from "./util";
 
 export interface IServerConfig {
-    sessionsManager: SessionsManager;
-    seancesManager: SeancesManager;
-    pageRenderer: PageRenderer;
     app: IApplication;
+    store: NewebGlobalStore;
     logger: typeof console;
 }
 class Server {
@@ -27,84 +25,98 @@ class Server {
      * Отправляем ответ клиенту
      */
     public async onRequest(request: IRequest, res: Response) {
-        // get session's context
-        const sessionId =
-            await this.config.sessionsManager.resolveSessionIdByRequest(request);
-        const sesionContext = await this.config.sessionsManager.getSessionContext(sessionId);
-        // get current route
-        const RouterClass = await this.config.app.getRouterClass();
-        const router = new RouterClass({
+
+
+
+
+        const seancesManager = new SeancesManager({
             app: this.config.app,
-            context: await this.config.app.getContext(),
-            session: sesionContext,
-            request,
+            store: this.config.store,
         });
-        router.navigate({ request });
-        const route = await router.waitRoute();
-        router.dispose();
-        // Handling route
-        if (route.type === "redirect") {
-            res.header("location", route.url);
-            res.sendStatus(302);
-            return;
-        }
-        if (route.type === "notFound") {
-            res.status(404).send(route.text);
-            return;
-        }
         // handling route of page
         // create new seans with RoutePage
-        const seance = await this.config.seancesManager.createSeance({ sessionId, request });
-        await seance.loadPage(route.page);
+        const { seanceId, seance } = await seancesManager.createSeance({ sessionId, request });
+        await seance.loadPage(seanceId, route.page);
         // get info about seance
-        const seanceDump = seance.dumpToJson();
+        const seanceDump = {
+            seanceId,
+            page: await this.config.store.get("seance-current-page", seanceId),
+        };
         const page = seanceDump.page;
         // render page on server
-        const { html } = await this.config.pageRenderer.render(seanceDump.page);
+        const pageRenderer = new PageRenderer({
+            app: this.config.app,
+        });
+        const { html } = await pageRenderer.render(seanceDump.page);
         const filledHtml = await this.config.app.fillTemplate(html,
             { title: page.title, meta: page.meta }, seanceDump);
 
         // Add session info to response
-        await this.config.sessionsManager.enrichResponse(sessionId, res);
+        await sessionsManager.enrichResponse(sessionId, res);
         // send html and seans'es info to client
         res.status(200).send(filledHtml);
     }
     public async onNewConnection(socket: Socket) {
-        // Обогощяем запрос, распарсивая печеньки
-        await new Promise((resolve) => {
-            cookieParser()(socket.request, {} as any, resolve);
-        });
+        const socketId = this.generateSocketId();
+        this.config.store.setObject("socket", socketId, socket);
         // Ждем первое сообщение от клиента
-        socket.on("initialize", async (
-            params: {
-                seanceId: string;
-            },
-            cb) => {
-            // create request from socket-info
-            const request = {
-                clientIpAddress: socket.conn.remoteAddress,
-                cookies: socket.request.cookies,
-                headers: socket.request.headers,
-                url: "",
-                hostname: "",
-            };
-            // get session by request
-            const sessionId = await this.config.sessionsManager.resolveSessionIdByRequest(request);
-            // connect seans to socket
-            await this.config.seancesManager.connect({
-                seanceId: params.seanceId,
-                sessionId,
-                socket,
-            });
-            cb();
-        });
+        const initializeCallback = (params: any, cb: any) => this.initialize(socketId, params, cb);
+        // this.config.store.setObject("socket-event-callback", [socketId, "initialize"], initializeCallback);
+        socket.on("initialize", initializeCallback);
+        // Либо сообщение о восстановлении сеанса
+        const recoveryCallback = (params: ISeanceDumpInfo, cb: any) => this.recovery(socketId, params, cb);
+        socket.on("recovery", recoveryCallback);
+        // this.config.store.setObject("socket-event-callback", [socketId, "recovery"], initializeCallback);
         // При разрыве соединения, сообщаем сеансу об этом и отписываемся от сокета
-        socket.on("disconnect", () => this.disconnect(socket));
-        socket.on("error", () => this.disconnect(socket));
+        socket.on("disconnect", () => this.disconnect(socketId));
+        socket.on("error", () => this.disconnect(socketId));
     }
-    protected async disconnect(socket: Socket) {
+    protected generateSocketId() {
+        return (+new Date()) + Math.round(Math.random() * 100000).toString();
+    }
+    // socketId: string, params: ISeanceDumpInfo, cb: () => void
+    protected async recovery(_: string, __: ISeanceDumpInfo, ___: any) {
+        //
+    }
+    protected async initialize(
+        socketId: string,
+        params: { seanceId: string; }, cb: () => void) {
+        const socket = await this.config.store.getObject("socket", socketId);
+        // Обогощяем запрос, распарсивая печеньки
+        await parseRequestCookies(socket.request);
+        // create request from socket-info
+        const request = {
+            clientIpAddress: socket.conn.remoteAddress,
+            cookies: socket.request.cookies,
+            headers: socket.request.headers,
+            url: "",
+            hostname: "",
+        };
+        // get session by request
+        const sessionsManager = new SessionsManager({
+            store: this.config.store,
+        });
+        const sessionId = await sessionsManager.resolveSessionIdByRequest(request);
+        // connect seans to socket
+        const seancesManager = new SeancesManager({
+            app: this.config.app,
+            store: this.config.store,
+        });
+        await seancesManager.connect({
+            seanceId: params.seanceId,
+            sessionId,
+            socketId,
+        });
+        cb();
+    }
+    protected async disconnect(socketId: string) {
+        const socket = await this.config.store.getObject("socket", socketId);
         socket.removeAllListeners();
-        await this.config.seancesManager.disconnect(socket);
+        const seancesManager = new SeancesManager({
+            app: this.config.app,
+            store: this.config.store,
+        });
+        await seancesManager.disconnect(socketId);
     }
 }
 export default Server;

@@ -16,11 +16,25 @@ class Router implements IRouter {
     constructor(public config: IRouterConfig) {
         Router.instance = this;
     }
-    public navigate(params: { request: IRequest }) {
+    public async navigate(params: { request: IRequest }) {
         if (this.config.context.appContext1 !== "appContext1Value"
-            || this.config.session.getItem("session1Item1").get() !== "session1Item1Value"
+            || (await this.config.session.getItem("session1Item1")).get() !== "session1Item1Value"
         ) {
             throw new Error("Invalid config");
+        }
+        if (params.request.url.indexOf("~page1~") > -1) {
+            this.routeEmitter.emit({
+                type: "page",
+                page: {
+                    url: params.request.url,
+                    rootFrame: {
+                        name: "page1RootFrame",
+                        params: {},
+                        frames: {},
+                    },
+                },
+            });
+            return;
         }
         if (params.request.url.indexOf("~not-found~") > -1) {
             this.routeEmitter.emit({ type: "notFound", text: "NF1" });

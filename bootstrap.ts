@@ -5,21 +5,18 @@ import { Interactive } from "neweb-cli";
 import { ModulePacker } from "neweb-pack";
 import { join, resolve } from "path";
 import SocketIOServer = require("socket.io");
+import { IDataRegistry, IObjectsRegistry } from ".";
 import { REQUIRE_FUNC_NAME } from "./common";
 import Application from "./lib/Application";
-import ControllersManager from "./lib/ControllersManager";
+import GlobalStore from "./lib/GlobalStore";
 import ModulesServer from "./lib/ModulesServer";
-import PageCreator from "./lib/PageCreator";
-import PageRenderer from "./lib/PageRenderer";
-import SeancesManager from "./lib/SeancesManager";
 import Server from "./lib/Server";
-import SessionsManager from "./lib/SessionsManager";
-import SessionsStorage from "./lib/SessionsStorage";
 const logger = console;
 const appPath = resolve(join(process.cwd(), "app"));
 const modulesPath = resolve(join(appPath, "..", "cache", "modules"));
 const environment = process.env.NODE_ENV === "production" ? "production" : "development";
-const port = typeof (process.env.PORT) !== "undefined" ? parseInt(process.env.PORT, 10) : 5000;
+const rawPort = process.env.PORT;
+const port = rawPort ? parseInt(rawPort, 10) : 5000;
 (async () => {
     process.on("uncaughtException", (e) => {
         logger.log("uncaughtException", e);
@@ -41,33 +38,47 @@ const port = typeof (process.env.PORT) !== "undefined" ? parseInt(process.env.PO
         appPath,
         modulePacker,
     });
-    const pageRenderer = new PageRenderer({
-        app,
-    });
-    const controllersManager = new ControllersManager({
-        app,
-    });
-    const sessionsStorage = new SessionsStorage({
-        sessionsPath: join(appPath, "..", "sessions"),
-    });
-    const sessionsManager = new SessionsManager({
-        sessionsStorage,
-    });
-    const pageCreator = new PageCreator({
-        app,
-    });
-    const seancesManager = new SeancesManager({
-        app,
-        controllersManager,
-        pageCreator,
-        sessionsManager,
+    const store = new GlobalStore<IDataRegistry, IObjectsRegistry>({
+        storePath: __dirname + "/../tmp",
+        dataTypes: {
+            "session": {
+                lifetime: 1000,
+                persistant: false,
+            },
+            "session-data": {
+                lifetime: 1000,
+                persistant: false,
+            },
+            "frame-controller": { lifetime: 1000, persistant: false },
+            "frame-controller-data": { lifetime: 1000, persistant: false },
+            "seance": { lifetime: 1000, persistant: false },
+            "seance-socket": { lifetime: 1000, persistant: false },
+            "seance-current-page": { lifetime: 1000, persistant: false },
+            "seance-request": { lifetime: 1000, persistant: false },
+        },
+        objectsTypes: {
+            "frame-controller-data-callback": {
+                lifetime: 1000,
+            },
+            "frame-controller-object": {
+                lifetime: 1000,
+            },
+            "socket": {
+                lifetime: 1000,
+            },
+            "router": {
+                lifetime: 1000,
+            },
+            "router-route-callback": {
+                lifetime: 1000,
+            },
+            "socket-event-callback": { lifetime: 1000 },
+        },
     });
     const server = new Server({
         app,
         logger: console,
-        pageRenderer,
-        seancesManager,
-        sessionsManager,
+        store,
     });
     expressApp.get("/bundle.js", (_, res) => res.sendFile(resolve(__dirname + "/dist/bundle.js")));
     const modulesServer = new ModulesServer({

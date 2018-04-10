@@ -1,6 +1,8 @@
 import { IPackInfoModule, IPackInfo } from "neweb-pack";
 import { Onemitter } from "onemitter";
-
+import GlobalStore from "./lib/GlobalStore";
+import { Socket } from "socket.io";
+import { Request, Response } from "express";
 export interface IRequest {
     url: string;
     hostname: string;
@@ -49,7 +51,6 @@ export interface IPageMeta {
 }
 export interface IRouterConfig {
     context: any;
-    app: IApplication;
     session: ISessionContext;
     request: IRequest;
 }
@@ -115,7 +116,7 @@ export interface IFrameController extends Onemitter<any> {
     onChangeParams: (params: any) => Promise<void>;
 }
 export interface ISessionContext {
-    getItem(name: string): Onemitter<any>;
+    getItem(name: string): Promise<Onemitter<any>>;
     setItem(name: string, value: any): Promise<void>;
 }
 export interface ISeanceDumpInfo {
@@ -133,3 +134,43 @@ export interface IHistoryContext {
     push(url: string): void;
     replace(url: string): void;
 }
+export interface IRegistrySession {
+    id: string;
+    hash: string;
+}
+export interface IDataRegistry {
+    session: IRegistrySession;
+    "session-data": any;
+    "frame-controller": {
+        objectId: string;
+        seanceId: string;
+        sessionId: string;
+    };
+    "frame-controller-data": any;
+    seance: {
+        sessionId: string;
+    };
+    "seance-socket": string;
+    "seance-current-page": IPage;
+    "seance-request": IRequest;
+}
+export interface IObjectsRegistry {
+    "app": IApplication;
+    "frame-controller-data-callback": (value: any) => void;
+    "frame-controller-object": IFrameController;
+    "socket": Socket;
+    "socket-event-callback": (...args: any[]) => void;
+    "router": IRouter;
+    "router-route-callback": (route: IRoute) => void;
+    "request": IRequest;
+    "http-request": Request;
+    "http-response": Response;
+}
+export interface IRegistryActions {
+    "new-http-request": Request;
+    "new-controller-data": any;
+    "new-router-route": IRoute;
+    "new-socket-connection": Socket;
+    "seance-navigate": string;
+}
+export type NewebGlobalStore = GlobalStore<IDataRegistry, IObjectsRegistry, IRegistryActions>
