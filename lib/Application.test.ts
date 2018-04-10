@@ -16,7 +16,7 @@ describe("Application:tests", () => {
         });
     });
     it("requireModule should return default exports of module by path", async () => {
-        expect((await app.requireModule("test"))()).toBe("testDefaultExport1");
+        expect((await app.requireModule("module1"))()).toBe("testDefaultExport1");
     });
     it("requireModule should return undefined when module non-exists", async () => {
         expect(await app.requireModule("test" + Math.random())).toBeUndefined();

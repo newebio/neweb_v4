@@ -19,7 +19,7 @@ const logger = console;
 const appPath = resolve(join(process.cwd(), "app"));
 const modulesPath = resolve(join(appPath, "..", "cache", "modules"));
 const environment = process.env.NODE_ENV === "production" ? "production" : "development";
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
+const port = typeof (process.env.PORT) !== "undefined" ? parseInt(process.env.PORT, 10) : 5000;
 (async () => {
     process.on("uncaughtException", (e) => {
         logger.log("uncaughtException", e);
