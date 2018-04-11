@@ -68,6 +68,8 @@ export async function sessionSetData(
     params: { sessionId: string },
     args: { name: string, value: any }) {
     await store.set("session-data", [params.sessionId, args.name], args.value);
+    const storage = await store.getObject("sessions-storage", "default");
+    storage.setData(params.sessionId, args.name, args.value);
 }
 export async function getSessionContext(
     store: NewebGlobalStore,

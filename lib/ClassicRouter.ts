@@ -97,7 +97,7 @@ export function PageRouteByFrame(params: {
 }
 export function RouteWithRedirectOn(
     params: {
-        condition: (request: IRequest, context: any) => boolean;
+        condition: (request: IRequest, context: any) => boolean | Promise<boolean>;
         url: (request: IRequest, context: any) => string;
     },
     next: IRouteHandler): IRouteHandler {

@@ -118,7 +118,7 @@ export interface IFrameController extends Onemitter<any> {
     onChangeParams: (params: any) => Promise<void>;
 }
 export interface ISessionContext {
-    getItem(name: string): Promise<Onemitter<any>>;
+    getItem(name: string): Onemitter<any>;
     setItem(name: string, value: any): Promise<void>;
 }
 export interface ISeanceDumpInfo {

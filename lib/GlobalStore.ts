@@ -162,12 +162,12 @@ class GlobalStore<T, O,
             delete this.objects[type][id];
         }
     }
-    public async getEmitter(type: keyof T, id: string | string[]): Promise<Onemitter<T[keyof T]>> {
+    public getEmitter(type: keyof T, id: string | string[]): Onemitter<T[keyof T]> {
         if (Array.isArray(id)) {
             id = id.join("~");
         }
         if (!this.data[type][id]) {
-            await this.createData(type, id);
+            this.createData(type, id);
         }
         return this.data[type][id].emitter;
     }

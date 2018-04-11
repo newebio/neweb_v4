@@ -28,7 +28,7 @@ class Router {
     navigate(params) {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.config.context.appContext1 !== "appContext1Value"
-                || (yield this.config.session.getItem("session1Item1")).get() !== "session1Item1Value") {
+                || this.config.session.getItem("session1Item1").get() !== "session1Item1Value") {
                 throw new Error("Invalid config");
             }
             if (params.request.url.indexOf("~page1~") > -1) {

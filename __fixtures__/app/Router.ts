@@ -18,7 +18,7 @@ class Router implements IRouter {
     }
     public async navigate(params: { request: IRequest }) {
         if (this.config.context.appContext1 !== "appContext1Value"
-            || (await this.config.session.getItem("session1Item1")).get() !== "session1Item1Value"
+            || this.config.session.getItem("session1Item1").get() !== "session1Item1Value"
         ) {
             throw new Error("Invalid config");
         }

@@ -21,6 +21,14 @@ class SessionsStorage {
             return null;
         }
     }
+    public async setData(sessionId: string, name: string, value: any) {
+        const session = await this.get(sessionId);
+        if (!session) {
+            throw new Error("Not found session " + sessionId);
+        }
+        session.data[name] = value;
+        await this.set(sessionId, session);
+    }
     public async set(id: string, data: ISession) {
         const sessionPath = this.getSessionPath(id);
         await promisify(mkdirp)(dirname(sessionPath));
