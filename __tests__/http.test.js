@@ -9,12 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = require("path");
-const http_1 = require("./http");
-const ExpressResponse_1 = require("./testutil/ExpressResponse");
-const StoreHelper_1 = require("./testutil/StoreHelper");
+const ExpressResponse_1 = require("./../lib/testutil/ExpressResponse");
+const StoreHelper_1 = require("./../lib/testutil/StoreHelper");
 const appPath = path_1.resolve(__dirname + "/../__fixtures__/app");
 const neweb_pack_1 = require("./../__mocks__/neweb-pack");
-const request1Id = "request1IdValue";
 const appParentItem = {
     type: "object",
     objectType: "app",
@@ -35,10 +33,11 @@ describe("http::tests", () => {
                 sessid: StoreHelper_1.session1Sessid,
             },
         };
-        yield storeHelper.store.create("request", request1Id, appParentItem, request);
         const response = new ExpressResponse_1.default();
-        yield storeHelper.store.setObject("http-response", request1Id, appParentItem, response);
-        yield http_1.onRequest(storeHelper.store, request1Id);
+        yield storeHelper.store.dispatch("new-http-request", appParentItem, {}, {
+            request: request,
+            response: response,
+        });
         expect(response.getResponse()).toEqual({
             statusCode: 404,
             body: "NF1",
@@ -53,10 +52,11 @@ describe("http::tests", () => {
                 sessid: StoreHelper_1.session1Sessid,
             },
         };
-        yield storeHelper.store.create("request", request1Id, appParentItem, request);
         const response = new ExpressResponse_1.default();
-        yield storeHelper.store.setObject("http-response", request1Id, appParentItem, response);
-        yield http_1.onRequest(storeHelper.store, request1Id);
+        yield storeHelper.store.dispatch("new-http-request", appParentItem, {}, {
+            request: request,
+            response: response,
+        });
         expect(response.getResponse()).toEqual({
             statusCode: 302,
             body: "",
@@ -74,10 +74,11 @@ describe("http::tests", () => {
             },
             url: "~page1~",
         };
-        yield storeHelper.store.create("request", request1Id, appParentItem, request);
         const response = new ExpressResponse_1.default();
-        yield storeHelper.store.setObject("http-response", request1Id, appParentItem, response);
-        yield http_1.onRequest(storeHelper.store, request1Id);
+        yield storeHelper.store.dispatch("new-http-request", appParentItem, {}, {
+            request: request,
+            response: response,
+        });
         const storeDump = yield storeHelper.store.dump();
         const seancesIds = Object.keys(storeDump.data.seance);
         const framesIds = Object.keys(storeDump.data["frame-controller"]);

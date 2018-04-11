@@ -5,12 +5,12 @@ import { Interactive } from "neweb-cli";
 import { ModulePacker } from "neweb-pack";
 import { join, resolve } from "path";
 import SocketIOServer = require("socket.io");
-import { IDataRegistry, IObjectsRegistry } from ".";
+import { IDataRegistry, IObjectsRegistry, IRegistryActions } from ".";
 import { REQUIRE_FUNC_NAME } from "./common";
+import actions from "./lib/actions";
 import Application from "./lib/Application";
 import GlobalStore from "./lib/GlobalStore";
 import ModulesServer from "./lib/ModulesServer";
-import Server from "./lib/Server";
 const logger = console;
 const appPath = resolve(join(process.cwd(), "app"));
 const modulesPath = resolve(join(appPath, "..", "cache", "modules"));
@@ -38,61 +38,58 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
         appPath,
         modulePacker,
     });
-    const store = new GlobalStore<IDataRegistry, IObjectsRegistry>({
+    const store = new GlobalStore<IDataRegistry, IObjectsRegistry, IRegistryActions>({
         storePath: __dirname + "/../tmp",
+        actions,
         dataTypes: {
-            "session": {
-                lifetime: 1000,
-                persistant: false,
-            },
-            "session-data": {
-                lifetime: 1000,
-                persistant: false,
-            },
+            "session": { lifetime: 1000, persistant: false },
+            "session-data": { lifetime: 1000, persistant: false },
             "frame-controller": { lifetime: 1000, persistant: false },
             "frame-controller-data": { lifetime: 1000, persistant: false },
             "seance": { lifetime: 1000, persistant: false },
             "seance-socket": { lifetime: 1000, persistant: false },
             "seance-current-page": { lifetime: 1000, persistant: false },
             "seance-request": { lifetime: 1000, persistant: false },
+            "request": { lifetime: 1000, persistant: false },
         },
         objectsTypes: {
-            "frame-controller-data-callback": {
-                lifetime: 1000,
-            },
-            "frame-controller-object": {
-                lifetime: 1000,
-            },
-            "socket": {
-                lifetime: 1000,
-            },
-            "router": {
-                lifetime: 1000,
-            },
-            "router-route-callback": {
-                lifetime: 1000,
-            },
-            "socket-event-callback": { lifetime: 1000 },
+            "store": { lifetime: 0 },
+            "http-request": { lifetime: 1000 },
+            "http-response": { lifetime: 1000 },
+            "app": { lifetime: 1000 },
+            "frame-controller-object": { lifetime: 1000 },
+            "socket": { lifetime: 1000 },
+            "router": { lifetime: 1000 },
         },
     });
-    const server = new Server({
-        app,
-        logger: console,
-        store,
-    });
+
+    await store.setObject("app", "default", {
+        type: "object",
+        objectType: "store",
+        id: "root",
+    }, app);
     expressApp.get("/bundle.js", (_, res) => res.sendFile(resolve(__dirname + "/dist/bundle.js")));
     const modulesServer = new ModulesServer({
         modulesPath,
     });
     modulesServer.attach(expressApp);
     expressApp.use(express.static(join(appPath, "public")));
-    expressApp.use(cookieParser(), (req, res) => server.onRequest(, res));
+    expressApp.use(cookieParser(), (req, res) => store.dispatch("new-http-request", {
+        type: "object",
+        objectType: "app",
+        id: "default",
+    }, {}, {
+            request: req,
+            response: res,
+        }));
     const io = SocketIOServer(httpServer as any, {
         wsEngine: "ws",
     } as any);
-    io.on("connection", (socket) => {
-        server.onNewConnection(socket);
-    });
+    io.on("connection", await store.action("new-socket-connection", {
+        type: "object",
+        objectType: "app",
+        id: "default",
+    }, {}));
     httpServer.listen(port, (err: any) => {
         if (err) {
             logger.log(err);

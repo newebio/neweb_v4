@@ -23,7 +23,11 @@ export async function onHttpRequest(store: NewebGlobalStore, req: Request, respo
         url: req.url,
         clientIpAddress: req.ip,
     };
-    await store.set("request", requestId, request);
+    await store.create("request", requestId, {
+        type: "object",
+        objectType: "http-request",
+        id: requestId,
+    }, request);
     await onRequest(store, requestId);
 }
 /**

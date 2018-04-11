@@ -1,31 +1,26 @@
 import { ModulePacker } from "neweb-pack";
 import { REQUIRE_FUNC_NAME } from "../../common";
 import { IDataRegistry, IObjectsRegistry, IRegistryActions } from "./../..";
+import actions from "./../actions";
 import Application from "./../Application";
-import GlobalStore, { IGlobalStoreActionResolver } from "./../GlobalStore";
+import GlobalStore from "./../GlobalStore";
 export const session1Id = "session1IdValue";
 export const session1Hash = "session1HashValue";
 export const session1Sessid = session1Id + ":" + session1Hash;
 class StoreHelper {
-    public actions: {[P in keyof IRegistryActions]:
+    /*public actions: {[P in keyof IRegistryActions]:
         IGlobalStoreActionResolver<IRegistryActions, P>} = {
             "new-controller-data": { action: jest.fn() },
             "new-http-request": { action: jest.fn() },
             "new-router-route": { action: jest.fn() },
             "new-socket-connection": { action: jest.fn() },
             "seance-navigate": { action: jest.fn() },
-        };
+        };*/
     public store = new GlobalStore<IDataRegistry, IObjectsRegistry, IRegistryActions>({
         storePath: __dirname + "/../tmp",
         dataTypes: {
-            "session": {
-                lifetime: 1000,
-                persistant: false,
-            },
-            "session-data": {
-                lifetime: 1000,
-                persistant: false,
-            },
+            "session": { lifetime: 1000, persistant: false },
+            "session-data": { lifetime: 1000, persistant: false },
             "frame-controller": { lifetime: 1000, persistant: false },
             "frame-controller-data": { lifetime: 1000, persistant: false },
             "seance": { lifetime: 1000, persistant: false },
@@ -36,26 +31,14 @@ class StoreHelper {
         },
         objectsTypes: {
             "store": { lifetime: 0 },
-            "http-request": {
-                lifetime: 1000,
-            },
-            "http-response": {
-                lifetime: 1000,
-            },
-            "app": {
-                lifetime: 1000,
-            },
-            "frame-controller-object": {
-                lifetime: 1000,
-            },
-            "socket": {
-                lifetime: 1000,
-            },
-            "router": {
-                lifetime: 1000,
-            },
+            "http-request": { lifetime: 1000 },
+            "http-response": { lifetime: 1000 },
+            "app": { lifetime: 1000 },
+            "frame-controller-object": { lifetime: 1000 },
+            "socket": { lifetime: 1000 },
+            "router": { lifetime: 1000 },
         },
-        actions: this.actions,
+        actions,
     });
     constructor(protected config: { appPath: string }) {
     }

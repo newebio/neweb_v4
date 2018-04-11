@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { NewebGlobalStore } from "./..";
+import { ISeanceDumpInfo, NewebGlobalStore } from "./..";
 import { IGlobalStoreParentItem } from "./GlobalStore";
 import { connectSeance, restoreSeance } from "./seances";
 import { resolveSessionIdByRequest } from "./sessions";
@@ -9,8 +9,10 @@ const defaultApp: IGlobalStoreParentItem<any, any> = {
     objectType: "app",
     id: "default",
 };
-export async function recoverySocket(store: NewebGlobalStore, params: ) {
-
+export async function recoverySocket(
+    _: NewebGlobalStore, __: { socketId: string },
+    ___: ISeanceDumpInfo) {
+    // TODO
 }
 export async function onNewConnection(store: NewebGlobalStore, socket: Socket) {
     const socketId = generateSocketId();

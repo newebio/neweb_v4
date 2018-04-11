@@ -16,10 +16,10 @@ const neweb_pack_1 = require("neweb-pack");
 const path_1 = require("path");
 const SocketIOServer = require("socket.io");
 const common_1 = require("./common");
+const actions_1 = require("./lib/actions");
 const Application_1 = require("./lib/Application");
 const GlobalStore_1 = require("./lib/GlobalStore");
 const ModulesServer_1 = require("./lib/ModulesServer");
-const Server_1 = require("./lib/Server");
 const logger = console;
 const appPath = path_1.resolve(path_1.join(process.cwd(), "app"));
 const modulesPath = path_1.resolve(path_1.join(appPath, "..", "cache", "modules"));
@@ -48,59 +48,55 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
     });
     const store = new GlobalStore_1.default({
         storePath: __dirname + "/../tmp",
+        actions: actions_1.default,
         dataTypes: {
-            "session": {
-                lifetime: 1000,
-                persistant: false,
-            },
-            "session-data": {
-                lifetime: 1000,
-                persistant: false,
-            },
+            "session": { lifetime: 1000, persistant: false },
+            "session-data": { lifetime: 1000, persistant: false },
             "frame-controller": { lifetime: 1000, persistant: false },
             "frame-controller-data": { lifetime: 1000, persistant: false },
             "seance": { lifetime: 1000, persistant: false },
             "seance-socket": { lifetime: 1000, persistant: false },
             "seance-current-page": { lifetime: 1000, persistant: false },
             "seance-request": { lifetime: 1000, persistant: false },
+            "request": { lifetime: 1000, persistant: false },
         },
         objectsTypes: {
-            "frame-controller-data-callback": {
-                lifetime: 1000,
-            },
-            "frame-controller-object": {
-                lifetime: 1000,
-            },
-            "socket": {
-                lifetime: 1000,
-            },
-            "router": {
-                lifetime: 1000,
-            },
-            "router-route-callback": {
-                lifetime: 1000,
-            },
-            "socket-event-callback": { lifetime: 1000 },
+            "store": { lifetime: 0 },
+            "http-request": { lifetime: 1000 },
+            "http-response": { lifetime: 1000 },
+            "app": { lifetime: 1000 },
+            "frame-controller-object": { lifetime: 1000 },
+            "socket": { lifetime: 1000 },
+            "router": { lifetime: 1000 },
         },
     });
-    const server = new Server_1.default({
-        app,
-        logger: console,
-        store,
-    });
+    yield store.setObject("app", "default", {
+        type: "object",
+        objectType: "store",
+        id: "root",
+    }, app);
     expressApp.get("/bundle.js", (_, res) => res.sendFile(path_1.resolve(__dirname + "/dist/bundle.js")));
     const modulesServer = new ModulesServer_1.default({
         modulesPath,
     });
     modulesServer.attach(expressApp);
     expressApp.use(express.static(path_1.join(appPath, "public")));
-    expressApp.use(cookieParser(), (req, res) => server.onRequest(, res));
+    expressApp.use(cookieParser(), (req, res) => store.dispatch("new-http-request", {
+        type: "object",
+        objectType: "app",
+        id: "default",
+    }, {}, {
+        request: req,
+        response: res,
+    }));
     const io = SocketIOServer(httpServer, {
         wsEngine: "ws",
     });
-    io.on("connection", (socket) => {
-        server.onNewConnection(socket);
-    });
+    io.on("connection", yield store.action("new-socket-connection", {
+        type: "object",
+        objectType: "app",
+        id: "default",
+    }, {}));
     httpServer.listen(port, (err) => {
         if (err) {
             logger.log(err);
