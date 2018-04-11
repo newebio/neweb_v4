@@ -39,7 +39,7 @@ export async function getSessionContext(store: NewebGlobalStore, sessionId: stri
         setItem: async (name: string, value: string) => store.set("session-data", [sessionId, name], value),
     };
 }
-export async function enrichResponse(store: NewebGlobalStore, sessionId: string, response: Response) {
+export async function enrichResponseForSession(store: NewebGlobalStore, sessionId: string, response: Response) {
     const session = await store.get("session", sessionId);
     response.cookie("sessid", sessionId + ":" + session.hash);
 }

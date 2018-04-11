@@ -5,7 +5,7 @@ import PageComparator from "./../PageComparator";
 import PageCreator from "./../PageCreator";
 import { getSessionContext } from "./../sessions";
 
-export async function navigate(store: NewebGlobalStore, seanceId: string, url: string) {
+export async function navigateSeance(store: NewebGlobalStore, seanceId: string, url: string) {
     const router = await store.getObject("router", seanceId);
     const request = await store.get("seance-request", seanceId);
     router.navigate({
@@ -25,7 +25,7 @@ export async function onNewRoute(store: NewebGlobalStore, seanceId: string, rout
             socket.emit("redirect", route.url);
             return;
         }
-        store.dispatch("seance-navigate", seanceId, route.url);
+        store.dispatch("seance-navigate", { seanceId }, route.url);
         return;
     }
     if (route.type === "page") {
@@ -59,7 +59,9 @@ export async function initializeSeance(store: NewebGlobalStore, params: {
     });
     await store.set("seance-request", params.seanceId, params.request);
     await store.setObject("router", params.seanceId, router);
-    router.onNewRoute(await store.action("new-router-route", params.seanceId));
+    router.onNewRoute(await store.action("new-router-route", {
+        seanceId: params.seanceId,
+    }));
 }
 export async function loadSeancePage(store: NewebGlobalStore, seanceId: string, routePage: IRoutePage) {
     if (await store.has("seance-current-page", seanceId)) {
@@ -86,7 +88,7 @@ async function createFrameSeanceController(store: NewebGlobalStore, seanceId: st
         context: await app.getContext(),
         frameName: frame.frameName,
         params: frame.params,
-        navigate: await store.action("seance-navigate", seanceId),
+        navigate: await store.action("seance-navigate", { seanceId }),
         seanceId,
         sessionId: seance.sessionId,
     });

@@ -33,28 +33,8 @@ class Server {
             app: this.config.app,
             store: this.config.store,
         });
-        // handling route of page
-        // create new seans with RoutePage
-        const { seanceId, seance } = await seancesManager.createSeance({ sessionId, request });
-        await seance.loadPage(seanceId, route.page);
-        // get info about seance
-        const seanceDump = {
-            seanceId,
-            page: await this.config.store.get("seance-current-page", seanceId),
-        };
-        const page = seanceDump.page;
-        // render page on server
-        const pageRenderer = new PageRenderer({
-            app: this.config.app,
-        });
-        const { html } = await pageRenderer.render(seanceDump.page);
-        const filledHtml = await this.config.app.fillTemplate(html,
-            { title: page.title, meta: page.meta }, seanceDump);
 
-        // Add session info to response
-        await sessionsManager.enrichResponse(sessionId, res);
-        // send html and seans'es info to client
-        res.status(200).send(filledHtml);
+        
     }
     public async onNewConnection(socket: Socket) {
         const socketId = this.generateSocketId();

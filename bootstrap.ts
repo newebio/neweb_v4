@@ -86,13 +86,7 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
     });
     modulesServer.attach(expressApp);
     expressApp.use(express.static(join(appPath, "public")));
-    expressApp.use(cookieParser(), (req, res) => server.onRequest({
-        cookies: req.cookies || {},
-        headers: req.headers || {},
-        hostname: req.hostname,
-        url: req.url,
-        clientIpAddress: req.ip,
-    }, res));
+    expressApp.use(cookieParser(), (req, res) => server.onRequest(, res));
     const io = SocketIOServer(httpServer as any, {
         wsEngine: "ws",
     } as any);

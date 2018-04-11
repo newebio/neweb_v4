@@ -11,16 +11,27 @@ export interface IGlobalStoreDataTypeConfig {
 export interface IGlobalStoreObjectTypeConfig {
     lifetime: number;
 }
-export interface IGlobalStoreConfig<T, O> {
+export interface IGlobalStoreActionResolver<ACTIONS extends {
+    [index: string]: { params: ACTIONS[ACTIONTYPE]["params"], args: ACTIONS[ACTIONTYPE]["args"] };
+}, ACTIONTYPE extends keyof ACTIONS> {
+    action: (
+        store: GlobalStore<any, any, any>,
+        params: ACTIONS[ACTIONTYPE]["params"],
+        args: ACTIONS[ACTIONTYPE]["args"]) => void | Promise<void>;
+}
+export interface IGlobalStoreConfig<T, O, ACTIONS extends {
+    [index: string]: { params: any, args: any };
+}> {
     storePath: string;
     dataTypes: {[P in keyof T]: IGlobalStoreDataTypeConfig};
     objectsTypes: {[P in keyof O]: IGlobalStoreObjectTypeConfig};
+    actions: {[P in keyof ACTIONS]: IGlobalStoreActionResolver<ACTIONS, P>};
 }
 export interface IGlobalStoreObject<T> {
     object: T;
     createdAt: Date;
 }
-class GlobalStore<T, O, A> {
+class GlobalStore<T, O, ACTIONS extends { [index: string]: { params: any, args: any } }> {
     protected data: {
         [P in keyof T]: {
             [index: string]: {
@@ -35,7 +46,7 @@ class GlobalStore<T, O, A> {
     }  } = {} as any;
     protected dataTypes: {[P in keyof T]: IGlobalStoreDataTypeConfig } = {} as any;
     protected objectsTypes: {[P in keyof O]: IGlobalStoreObjectTypeConfig } = {} as any;
-    constructor(protected config: IGlobalStoreConfig<T, O>) {
+    constructor(protected config: IGlobalStoreConfig<T, O, ACTIONS>) {
         this.dataTypes = this.config.dataTypes;
         this.objectsTypes = this.config.objectsTypes;
         for (const typeName of Object.keys(this.config.dataTypes)) {
@@ -185,12 +196,13 @@ class GlobalStore<T, O, A> {
             },
         };
     }
-    public async action<P extends keyof A>(eventName: P, id: string | string[]):
-        Promise<(params: A[P]) => void | Promise<void>> {
-        return null as any;
+    public async action<P extends keyof ACTIONS>(eventName: P, params: ACTIONS[P]["params"]):
+        Promise<(args: ACTIONS[P]["args"]) => void | Promise<void>> {
+        return this.config.actions[eventName].action.bind(undefined, this, params);
     }
-    public async dispatch<P extends keyof A>(eventName: P, id: string | string[], params: A[P]): Promise<void> {
-
+    public async dispatch<P extends keyof ACTIONS>(
+        eventName: P, params: ACTIONS[P]["params"], args: ACTIONS[P]["args"]): Promise<void> {
+        await this.config.actions[eventName].action(this, params, args);
     }
     protected async generateId() {
         const id = new Date().getTime().toString() + await uid(7);

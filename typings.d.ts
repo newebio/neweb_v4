@@ -153,24 +153,42 @@ export interface IDataRegistry {
     "seance-socket": string;
     "seance-current-page": IPage;
     "seance-request": IRequest;
+    "request": IRequest;
 }
 export interface IObjectsRegistry {
     "app": IApplication;
-    "frame-controller-data-callback": (value: any) => void;
     "frame-controller-object": IFrameController;
     "socket": Socket;
-    "socket-event-callback": (...args: any[]) => void;
     "router": IRouter;
-    "router-route-callback": (route: IRoute) => void;
-    "request": IRequest;
     "http-request": Request;
     "http-response": Response;
 }
 export interface IRegistryActions {
-    "new-http-request": Request;
-    "new-controller-data": any;
-    "new-router-route": IRoute;
-    "new-socket-connection": Socket;
-    "seance-navigate": string;
+    "new-http-request": {
+        args: {
+            request: Request;
+            response: Response;
+        };
+        params: {};
+    };
+    "new-controller-data": {
+        params: { frameId: string };
+        args: any; // data
+    };
+    "new-router-route": {
+        params: {
+            seanceId: string;
+        };
+        args: IRoute;
+    };
+    "new-socket-connection": {
+        params: {};
+        args: Socket;
+    };
+    "seance-navigate": {
+        params: { seanceId: string };
+        args: string; // url
+    };
+    [index: string]: { params: any, args: any };
 }
 export type NewebGlobalStore = GlobalStore<IDataRegistry, IObjectsRegistry, IRegistryActions>
