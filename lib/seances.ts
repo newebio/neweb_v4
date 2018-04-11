@@ -1,9 +1,9 @@
 import isAbsoluteUrl = require("is-absolute-url");
-import { IPageFrame, IRequest, IRoute, IRoutePage, NewebGlobalStore } from "./../..";
-import { createController, disposeController, getController, getControllerData } from "./../controllers";
-import PageComparator from "./../PageComparator";
-import PageCreator from "./../PageCreator";
-import { getSessionContext } from "./../sessions";
+import { IPageFrame, IRequest, IRoute, IRoutePage, NewebGlobalStore } from "./..";
+import { createController, disposeController, getController, getControllerData } from "./controllers";
+import PageComparator from "./PageComparator";
+import PageCreator from "./PageCreator";
+import { getSessionContext } from "./sessions";
 
 export async function navigateSeance(store: NewebGlobalStore, seanceId: string, url: string) {
     const router = await store.getObject("router", seanceId);
@@ -25,7 +25,11 @@ export async function onNewRoute(store: NewebGlobalStore, seanceId: string, rout
             socket.emit("redirect", route.url);
             return;
         }
-        store.dispatch("seance-navigate", { seanceId }, route.url);
+        await store.dispatch("seance-navigate", {
+            type: "data",
+            dataType: "seance",
+            id: seanceId,
+        }, { seanceId }, route.url);
         return;
     }
     if (route.type === "page") {
@@ -35,9 +39,13 @@ export async function onNewRoute(store: NewebGlobalStore, seanceId: string, rout
 
 export async function createSeance(store: NewebGlobalStore, params: { request: IRequest; sessionId: string }) {
     const seanceId = params.sessionId + Math.round(Math.random() * 100000).toString();
-    await store.set("seance", seanceId, {
-        sessionId: params.sessionId,
-    });
+    await store.create("seance", seanceId, {
+        type: "data",
+        dataType: "session",
+        id: params.sessionId,
+    }, {
+            sessionId: params.sessionId,
+        });
     await initializeSeance(store, {
         seanceId,
         sessionId: params.sessionId,
@@ -57,17 +65,29 @@ export async function initializeSeance(store: NewebGlobalStore, params: {
         context: await app.getContext(),
         request: params.request,
     });
-    await store.set("seance-request", params.seanceId, params.request);
-    await store.setObject("router", params.seanceId, router);
+    await store.create("seance-request", params.seanceId, {
+        type: "data",
+        dataType: "seance",
+        id: params.seanceId,
+    }, params.request);
+    await store.setObject("router", params.seanceId, {
+        type: "data",
+        dataType: "seance",
+        id: params.seanceId,
+    }, router);
     router.onNewRoute(await store.action("new-router-route", {
-        seanceId: params.seanceId,
-    }));
+        type: "object",
+        objectType: "router",
+        id: params.seanceId,
+    }, {
+            seanceId: params.seanceId,
+        }));
 }
 export async function loadSeancePage(store: NewebGlobalStore, seanceId: string, routePage: IRoutePage) {
     if (await store.has("seance-current-page", seanceId)) {
         await replaceSeancePage(store, seanceId, routePage);
     } else {
-        await store.set("seance-current-page", seanceId, await createSeancePage(store, seanceId, routePage));
+        await createSeancePage(store, seanceId, routePage);
     }
 }
 async function createSeancePage(store: NewebGlobalStore, seanceId: string, routePage: IRoutePage) {
@@ -77,7 +97,11 @@ async function createSeancePage(store: NewebGlobalStore, seanceId: string, route
     if (routePage.afterLoad) {
         await routePage.afterLoad(page);
     }
-    return page;
+    await store.create("seance-current-page", seanceId, {
+        type: "data",
+        dataType: "seance",
+        id: seanceId,
+    }, page);
 }
 async function createFrameSeanceController(store: NewebGlobalStore, seanceId: string, frame: IPageFrame) {
     const seance = await store.get("seance", seanceId);
@@ -88,7 +112,11 @@ async function createFrameSeanceController(store: NewebGlobalStore, seanceId: st
         context: await app.getContext(),
         frameName: frame.frameName,
         params: frame.params,
-        navigate: await store.action("seance-navigate", { seanceId }),
+        navigate: await store.action("seance-navigate", {
+            type: "data",
+            dataType: "seance",
+            id: seanceId,
+        }, { seanceId }),
         seanceId,
         sessionId: seance.sessionId,
     });
@@ -111,10 +139,10 @@ async function replaceSeancePage(store: NewebGlobalStore, seanceId: string, rout
         const controller = await getController(store, frame.frameId);
         await controller.onChangeParams(frame.params);
     }));
-    await store.set("seance-current-page", seanceId, info.page);
     if (routePage.afterLoad) {
         await routePage.afterLoad(info.page);
     }
+    await store.set("seance-current-page", seanceId, info.page);
     const socketId = await store.get("seance-socket", seanceId);
     if (socketId) {
         if (await store.hasObject("socket", socketId)) {

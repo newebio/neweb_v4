@@ -27,7 +27,11 @@ async function createSession(store: NewebGlobalStore, _: IRequest) {
         sessid,
         data: {},
     };
-    await store.set("session", id, { id, hash });
+    await store.create("session", id, {
+        type: "object",
+        objectType: "app",
+        id: "default",
+    }, { id, hash });
     return session;
 }
 export async function getSessionContext(store: NewebGlobalStore, sessionId: string) {

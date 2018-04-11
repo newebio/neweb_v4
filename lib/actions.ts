@@ -1,8 +1,8 @@
-import { IRegistryActions } from "./../..";
-import { onNewFrameControllerData } from "./../controllers";
-import { IGlobalStoreActionResolver } from "./../GlobalStore";
-import { onHttpRequest } from "./../http";
-import { navigateSeance, onNewRoute } from "./../seances";
+import { IRegistryActions } from "./..";
+import { onNewFrameControllerData } from "./controllers";
+import { IGlobalStoreActionResolver } from "./GlobalStore";
+import { onHttpRequest } from "./http";
+import { navigateSeance, onNewRoute } from "./seances";
 
 // controller data emit
 // router route emit
@@ -20,7 +20,7 @@ const actions: ActionsConfig = {
         action: (store, params, args) => onNewRoute(store, params.seanceId, args),
     },
     "new-socket-connection": {
-        action: (store, params, args) => { },
+        action: (store, params, args) => { /* */ },
     },
     "seance-navigate": {
         action: (store, params, args) => navigateSeance(store, params.seanceId, args),

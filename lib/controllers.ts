@@ -1,4 +1,4 @@
-import { ISessionContext, NewebGlobalStore } from "./../..";
+import { ISessionContext, NewebGlobalStore } from "./..";
 
 export interface ICreateControllerParams {
     frameId: string;
@@ -24,9 +24,9 @@ export async function getController(store: NewebGlobalStore, frameId: string) {
 export async function disposeController(store: NewebGlobalStore, frameId: string) {
     const controller = await store.getObject("frame-controller-object", frameId);
     await controller.dispose();
-    controller.off(await store.getObject("frame-controller-data-callback", frameId));
+    controller.removeAllListeners();
     await store.removeObject("frame-controller-object", frameId);
-    await store.removeObject("frame-controller-data-callback", frameId);
+    await store.remove("frame-controller", frameId);
 }
 export async function onNewFrameControllerData(store: NewebGlobalStore, frameId: string, value: any) {
     await store.set("frame-controller-data", frameId, value);
@@ -53,14 +53,27 @@ export async function createController(store: NewebGlobalStore, params: ICreateC
         params: params.params,
         session: params.session,
     });
-    await store.setObject("frame-controller-object", params.frameId, controller);
+    await store.create("frame-controller", params.frameId, {
+        type: "data",
+        dataType: "seance",
+        id: params.seanceId,
+    }, {
+            seanceId: params.seanceId,
+            sessionId: params.sessionId,
+            objectId: params.frameId,
+        });
+    await store.setObject("frame-controller-object", params.frameId, {
+        type: "data",
+        dataType: "frame-controller",
+        id: params.frameId,
+    }, controller);
     const data = await controller.getInitialData();
     controller.emit(data);
 
-    controller.on(await store.action("new-controller-data", { frameId: params.frameId }));
-    await store.set("frame-controller", params.frameId, {
-        seanceId: params.seanceId,
-        sessionId: params.sessionId,
-        objectId: params.frameId,
-    });
+    // subscribe to controller emitting
+    controller.on(await store.action("new-controller-data", {
+        type: "data",
+        dataType: "frame-controller",
+        id: params.frameId,
+    }, { frameId: params.frameId }));
 }

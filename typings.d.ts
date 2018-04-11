@@ -156,6 +156,7 @@ export interface IDataRegistry {
     "request": IRequest;
 }
 export interface IObjectsRegistry {
+    "store": GlobalStore<any, any, any>;
     "app": IApplication;
     "frame-controller-object": IFrameController;
     "socket": Socket;

@@ -13,29 +13,7 @@ export interface IServerConfig {
 }
 class Server {
     constructor(protected config: IServerConfig) { }
-    /**
-     * Схема работы:
-     * Получаем контекст сессии, который нужен для работы роутера
-     * Создаем новый класс роутера, передаем в него запрос и ждем, когда появится маршрут
-     * Очищаем роутер, он больше не понадобится
-     * Если тип маршрута - NotFound или Redirect, то посылаем соответствующий ответ клиенту (404 или 302)
-     * Создаем новый сеанс (Seans) и загружаем в него страницу, ждем формирования страницы
-     * С помощью серверного рендеринга получаем код страницы в виде html-строки
-     * Заполняем шаблон ответа кодом страницы, мета-информацией и информацией о сеансе
-     * Отправляем ответ клиенту
-     */
-    public async onRequest(request: IRequest, res: Response) {
 
-
-
-
-        const seancesManager = new SeancesManager({
-            app: this.config.app,
-            store: this.config.store,
-        });
-
-        
-    }
     public async onNewConnection(socket: Socket) {
         const socketId = this.generateSocketId();
         this.config.store.setObject("socket", socketId, socket);
