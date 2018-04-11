@@ -225,7 +225,7 @@ class GlobalStore<T, O,
         }
         return !!this.data[type][id] && this.data[type][id].emitter.has();
     }
-    public async getMaybe(type: keyof T, id: string | string[]): Promise<T[keyof T] | undefined> {
+    public async getMaybe<P extends keyof T>(type: P, id: string | string[]): Promise<T[P] | undefined> {
         if (Array.isArray(id)) {
             id = id.join("~");
         }

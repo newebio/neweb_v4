@@ -3,6 +3,7 @@ import { Onemitter } from "onemitter";
 import GlobalStore from "./lib/GlobalStore";
 import { Socket } from "socket.io";
 import { Request, Response } from "express";
+import { IRemoteFrameControllerDispatchParams } from "./common";
 export interface IRequest {
     url: string;
     hostname: string;
@@ -190,6 +191,30 @@ export interface IRegistryActions {
         params: { seanceId: string };
         args: string; // url
     };
+    "socket-disconnect": {
+        params: { socketId: string };
+        args: {};
+    };
+    "socket-error": {
+        params: { socketId: string };
+        args: {};
+    };
+    "socket-initialize": {
+        params: { socketId: string };
+        args: { seanceId: string; };
+    },
+    "socket-recovery": {
+        params: { socketId: string };
+        args: ISeanceDumpInfo;
+    }
+    "socket-frame-controller-dispatch": {
+        params: { socketId: string };
+        args: IRemoteFrameControllerDispatchParams;
+    },
+    "socket-navigate": {
+        params: { seanceId: string };
+        args: { url: string };
+    }
     [index: string]: { params: any, args: any };
 }
 export type NewebGlobalStore = GlobalStore<IDataRegistry, IObjectsRegistry, IRegistryActions>

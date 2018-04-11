@@ -1,4 +1,5 @@
 import isAbsoluteUrl = require("is-absolute-url");
+import { IRemoteFrameControllerDispatchParams } from "../common";
 import { IPageFrame, IRequest, IRoute, IRoutePage, NewebGlobalStore } from "./..";
 import { createController, disposeController, getController, getControllerData } from "./controllers";
 import PageComparator from "./PageComparator";
@@ -152,4 +153,41 @@ async function replaceSeancePage(store: NewebGlobalStore, seanceId: string, rout
             });
         }
     }
+}
+export async function restoreSeance() {
+    //
+}
+export async function connectSeance(store: NewebGlobalStore, { seanceId, socketId }: {
+    seanceId: string;
+    sessionId: string;
+    socketId: string;
+}) {
+    await store.create("seance-socket", seanceId, {
+        type: "data",
+        dataType: "seance",
+        id: seanceId,
+    }, socketId);
+    const socket = await store.getObject("socket", socketId);
+    const currentPage = await store.get("seance-current-page", seanceId);
+    await Promise.all(currentPage.frames.map(async (frame) => {
+        socket.emit("frame-controller-data", {
+            frameId: frame.frameId,
+            data: await getControllerData(store, frame.frameId),
+        });
+    }));
+    socket.on("frame-controller-dispatch", (async (
+        stor: NewebGlobalStore, sockId: string,
+        params: IRemoteFrameControllerDispatchParams, cb: any) => {
+        await stor.dispatch("socket-frame-controller-dispatch", {
+            type: "object",
+            objectType: "socket",
+            id: sockId,
+        }, { socketId: sockId }, params);
+        cb();
+    }).bind(undefined, store, socketId));
+    socket.on("navigate", await store.action("socket-navigate", {
+        type: "object",
+        objectType: "socket",
+        id: socketId,
+    }, { seanceId }));
 }

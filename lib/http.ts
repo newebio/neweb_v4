@@ -3,17 +3,7 @@ import { NewebGlobalStore } from "./..";
 import PageRenderer from "./PageRenderer";
 import { createSeance, loadSeancePage } from "./seances";
 import { enrichResponseForSession, getSessionContext, resolveSessionIdByRequest } from "./sessions";
-/**
- * Схема работы:
- * Получаем контекст сессии, который нужен для работы роутера
- * Создаем новый класс роутера, передаем в него запрос и ждем, когда появится маршрут
- * Очищаем роутер, он больше не понадобится
- * Если тип маршрута - NotFound или Redirect, то посылаем соответствующий ответ клиенту (404 или 302)
- * Создаем новый сеанс (Seans) и загружаем в него страницу, ждем формирования страницы
- * С помощью серверного рендеринга получаем код страницы в виде html-строки
- * Заполняем шаблон ответа кодом страницы, мета-информацией и информацией о сеансе
- * Отправляем ответ клиенту
- */
+
 export async function onHttpRequest(store: NewebGlobalStore, req: Request, response: Response) {
     const requestId = (+new Date()).toString() + Math.floor(Math.random() * 10000).toString();
     await store.setObject("http-request", requestId, {
@@ -36,6 +26,17 @@ export async function onHttpRequest(store: NewebGlobalStore, req: Request, respo
     await store.set("request", requestId, request);
     await onRequest(store, requestId);
 }
+/**
+ * Схема работы:
+ * Получаем контекст сессии, который нужен для работы роутера
+ * Создаем новый класс роутера, передаем в него запрос и ждем, когда появится маршрут
+ * Очищаем роутер, он больше не понадобится
+ * Если тип маршрута - NotFound или Redirect, то посылаем соответствующий ответ клиенту (404 или 302)
+ * Создаем новый сеанс (Seans) и загружаем в него страницу, ждем формирования страницы
+ * С помощью серверного рендеринга получаем код страницы в виде html-строки
+ * Заполняем шаблон ответа кодом страницы, мета-информацией и информацией о сеансе
+ * Отправляем ответ клиенту
+ */
 export async function onRequest(store: NewebGlobalStore, requestId: string) {
     const request = await store.get("request", requestId);
     // get session's context

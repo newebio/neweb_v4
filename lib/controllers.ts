@@ -1,4 +1,5 @@
 import { ISessionContext, NewebGlobalStore } from "./..";
+import { IRemoteFrameControllerDispatchParams } from "./../common";
 
 export interface ICreateControllerParams {
     frameId: string;
@@ -9,6 +10,12 @@ export interface ICreateControllerParams {
     session: ISessionContext;
     context: any;
     navigate: (url: string) => void;
+}
+export async function dispatchController(store: NewebGlobalStore, params: IRemoteFrameControllerDispatchParams) {
+    const controller = await getController(store, params.frameId);
+    if (controller) {
+        await controller.dispatch(params.actionName, ...params.args);
+    }
 }
 export async function resolveController(store: NewebGlobalStore, params: ICreateControllerParams) {
     if (!await store.has("frame-controller", params.frameId)) {
