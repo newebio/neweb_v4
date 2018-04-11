@@ -12,16 +12,11 @@ class PageRenderer {
     }
     public async render(page: IPage) {
         let el: any;
-        const data = [];
         const frames = [...page.frames];
         for (const pageFrame of frames.reverse()) {
             el = await this.renderFrame(pageFrame, el);
-            data.push(pageFrame.data);
         }
-        return {
-            html: ReactDOMServer.renderToString(el),
-            data: data.reverse(),
-        };
+        return ReactDOMServer.renderToString(el);
     }
     protected async renderFrame(frame: IPageFrame, children: any) {
         const ViewClass = await this.config.app.getFrameViewClass(frame.frameName);

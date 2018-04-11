@@ -14,11 +14,20 @@ exports.page1RootFrame = {
     modules: [],
     type: "local",
 };
+exports.counterFrame = {
+    name: "frames/counter/view",
+    version: "0.0.6",
+    modules: [],
+    type: "local",
+};
 class ModulePacker {
     addLocalPackage(entry) {
         return __awaiter(this, void 0, void 0, function* () {
             if (entry.indexOf("page1RootFrame") > -1) {
                 return exports.page1RootFrame;
+            }
+            if (entry.indexOf("counter") > -1) {
+                return exports.counterFrame;
             }
             throw new Error("Unknown entry " + entry);
         });

@@ -172,10 +172,12 @@ export async function connectSeance(store: NewebGlobalStore, { seanceId, socketI
     }, socketId);
     const socket = await store.getObject("socket", socketId);
     const currentPage = await store.get("seance-current-page", seanceId);
+
     await Promise.all(currentPage.frames.map(async (frame) => {
+        const data = await getControllerData(store, frame.frameId);
         socket.emit("frame-controller-data", {
             frameId: frame.frameId,
-            data: await getControllerData(store, frame.frameId),
+            data,
         });
     }));
     socket.on("frame-controller-dispatch", (async (

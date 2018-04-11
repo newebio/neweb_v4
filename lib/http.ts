@@ -87,7 +87,7 @@ export async function onRequest(store: NewebGlobalStore, requestId: string) {
     const pageRenderer = new PageRenderer({
         app,
     });
-    const { html } = await pageRenderer.render(seanceDump.page);
+    const html = await pageRenderer.render(seanceDump.page);
     const filledHtml = await app.fillTemplate(html,
         { title: page.title, meta: page.meta }, seanceDump);
 

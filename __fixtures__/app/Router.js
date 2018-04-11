@@ -31,6 +31,20 @@ class Router {
                 || this.config.session.getItem("session1Item1").get() !== "session1Item1Value") {
                 throw new Error("Invalid config");
             }
+            if (params.request.url.indexOf("~counter~") > -1) {
+                this.routeEmitter.emit({
+                    type: "page",
+                    page: {
+                        url: params.request.url,
+                        rootFrame: {
+                            name: "counter",
+                            params: {},
+                            frames: {},
+                        },
+                    },
+                });
+                return;
+            }
             if (params.request.url.indexOf("~page1~") > -1) {
                 this.routeEmitter.emit({
                     type: "page",

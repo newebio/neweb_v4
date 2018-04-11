@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+jest.mock("./../lib/PageRenderer");
 const path_1 = require("path");
 const ExpressResponse_1 = require("./../lib/testutil/ExpressResponse");
 const StoreHelper_1 = require("./../lib/testutil/StoreHelper");
@@ -85,26 +86,27 @@ describe("http::tests", () => {
         expect(seancesIds.length).toBe(1);
         expect(framesIds.length).toBe(1);
         const seanceId = seancesIds[0];
+        const page = {
+            url: "~page1~",
+            frames: [{
+                    frameId: framesIds[0],
+                    frameName: "page1RootFrame",
+                    params: {},
+                    frames: {},
+                    data: "Hello, world!",
+                    frameVersion: neweb_pack_1.page1RootFrame.version,
+                    modules: neweb_pack_1.page1RootFrame.modules.concat({
+                        name: neweb_pack_1.page1RootFrame.name,
+                        version: neweb_pack_1.page1RootFrame.version,
+                        type: neweb_pack_1.page1RootFrame.type,
+                    }),
+                }],
+            rootFrame: framesIds[0],
+            modules: [],
+        };
         const seanceInfo = {
             seanceId,
-            page: {
-                url: "~page1~",
-                frames: [{
-                        frameId: framesIds[0],
-                        frameName: "page1RootFrame",
-                        params: {},
-                        frames: {},
-                        data: undefined,
-                        frameVersion: neweb_pack_1.page1RootFrame.version,
-                        modules: neweb_pack_1.page1RootFrame.modules.concat({
-                            name: neweb_pack_1.page1RootFrame.name,
-                            version: neweb_pack_1.page1RootFrame.version,
-                            type: neweb_pack_1.page1RootFrame.type,
-                        }),
-                    }],
-                rootFrame: framesIds[0],
-                modules: [],
-            },
+            page,
         };
         expect(response.getResponse()).toEqual({
             statusCode: 200,
@@ -116,7 +118,7 @@ describe("http::tests", () => {
         const [title, meta, html, script] = body.split("|~|");
         expect(title).toBe("");
         expect(meta).toBe("<!--__page_meta_start__--><!--__page_meta_end__-->");
-        expect(html).toBe("<div>page1RootFrameBody</div>");
+        expect(JSON.parse(html)).toEqual(page);
         expect(script.substr(0, 20)).toBe(`window["__initial"]=`);
         expect(JSON.parse(script.substr(20))).toEqual(seanceInfo);
     }));

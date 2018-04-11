@@ -1,6 +1,7 @@
 import React = require("react");
-export default class extends React.Component<{}, {}> {
+import { IViewProps } from "../../../..";
+export default class extends React.Component<IViewProps<any, any>, {}> {
     public render() {
-        return React.createElement("div", {}, ["page1RootFrameBody"]);
+        return React.createElement("div", {}, ["page1RootFrameBody::", this.props.data]);
     }
 }

@@ -1,3 +1,4 @@
+jest.mock("./../lib/PageRenderer");
 import { resolve } from "path";
 import { IRequest, ISeanceDumpInfo } from "./..";
 import { IGlobalStoreParentItem } from "./../lib/GlobalStore";
@@ -78,26 +79,27 @@ describe("http::tests", () => {
         expect(seancesIds.length).toBe(1);
         expect(framesIds.length).toBe(1);
         const seanceId = seancesIds[0];
+        const page = {
+            url: "~page1~",
+            frames: [{
+                frameId: framesIds[0],
+                frameName: "page1RootFrame",
+                params: {},
+                frames: {},
+                data: "Hello, world!",
+                frameVersion: page1RootFrameModule.version,
+                modules: page1RootFrameModule.modules.concat({
+                    name: page1RootFrameModule.name,
+                    version: page1RootFrameModule.version,
+                    type: page1RootFrameModule.type,
+                }),
+            }],
+            rootFrame: framesIds[0],
+            modules: [],
+        };
         const seanceInfo: ISeanceDumpInfo = {
             seanceId,
-            page: {
-                url: "~page1~",
-                frames: [{
-                    frameId: framesIds[0],
-                    frameName: "page1RootFrame",
-                    params: {},
-                    frames: {},
-                    data: undefined,
-                    frameVersion: page1RootFrameModule.version,
-                    modules: page1RootFrameModule.modules.concat({
-                        name: page1RootFrameModule.name,
-                        version: page1RootFrameModule.version,
-                        type: page1RootFrameModule.type,
-                    }),
-                }],
-                rootFrame: framesIds[0],
-                modules: [],
-            },
+            page,
         };
         expect(response.getResponse()).toEqual({
             statusCode: 200,
@@ -109,7 +111,7 @@ describe("http::tests", () => {
         const [title, meta, html, script] = body.split("|~|");
         expect(title).toBe("");
         expect(meta).toBe("<!--__page_meta_start__--><!--__page_meta_end__-->");
-        expect(html).toBe("<div>page1RootFrameBody</div>");
+        expect(JSON.parse(html)).toEqual(page);
         expect(script.substr(0, 20)).toBe(`window["__initial"]=`);
         expect(JSON.parse(script.substr(20))).toEqual(seanceInfo);
     });
