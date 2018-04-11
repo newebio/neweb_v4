@@ -45,7 +45,11 @@ export async function onRequest(store: NewebGlobalStore, requestId: string) {
     const request = await store.get("request", requestId);
     // get session's context
     const sessionId = await resolveSessionIdByRequest(store, request);
-    const sesionContext = await getSessionContext(store, sessionId);
+    const sesionContext = await getSessionContext(store, {
+        type: "data",
+        dataType: "request",
+        id: requestId,
+    }, sessionId);
     const app = await store.getObject("app", "default");
     // get current route
     const RouterClass = await app.getRouterClass();
@@ -91,4 +95,6 @@ export async function onRequest(store: NewebGlobalStore, requestId: string) {
     await enrichResponseForSession(store, sessionId, res);
     // send html and seans'es info to client
     res.status(200).send(filledHtml);
+    await store.removeObject("http-request", requestId);
+    await store.removeObject("http-response", requestId);
 }

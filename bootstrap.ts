@@ -11,6 +11,7 @@ import actions from "./lib/actions";
 import Application from "./lib/Application";
 import GlobalStore from "./lib/GlobalStore";
 import ModulesServer from "./lib/ModulesServer";
+import SessionsStorage from "./lib/SessionsStorage";
 const logger = console;
 const appPath = resolve(join(process.cwd(), "app"));
 const modulesPath = resolve(join(appPath, "..", "cache", "modules"));
@@ -53,6 +54,7 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
             "request": { lifetime: 1000, persistant: false },
         },
         objectsTypes: {
+            "sessions-storage": { lifetime: 1000 },
             "store": { lifetime: 0 },
             "http-request": { lifetime: 1000 },
             "http-response": { lifetime: 1000 },
@@ -68,6 +70,12 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
         objectType: "store",
         id: "root",
     }, app);
+    // Sessions storage
+    await store.setObject("sessions-storage", "default", {
+        type: "object",
+        objectType: "store",
+        id: "root",
+    }, new SessionsStorage({ sessionsPath: join(appPath, "..", "sessions") }));
     expressApp.get("/bundle.js", (_, res) => res.sendFile(resolve(__dirname + "/dist/bundle.js")));
     const modulesServer = new ModulesServer({
         modulesPath,

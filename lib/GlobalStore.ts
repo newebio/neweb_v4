@@ -1,9 +1,5 @@
-import { writeFile } from "fs";
-import mkdirp = require("mkdirp");
 import o, { Onemitter } from "onemitter";
-import { dirname, join, resolve } from "path";
 import uid = require("uid-safe");
-import { promisify } from "util";
 export interface IGlobalStoreDataTypeConfig {
     persistant: boolean;
     lifetime: number;
@@ -32,9 +28,9 @@ export interface IGlobalStoreConfig<T, O, ACTIONS extends {
     [index: string]: { params: any, args: any };
 }> {
     storePath: string;
-    dataTypes: {[P in keyof T]: IGlobalStoreDataTypeConfig};
-    objectsTypes: {[P in keyof O]: IGlobalStoreObjectTypeConfig};
-    actions: {[P in keyof ACTIONS]: IGlobalStoreActionResolver<ACTIONS, P>};
+    dataTypes: { [P in keyof T]: IGlobalStoreDataTypeConfig };
+    objectsTypes: { [P in keyof O]: IGlobalStoreObjectTypeConfig };
+    actions: { [P in keyof ACTIONS]: IGlobalStoreActionResolver<ACTIONS, P> };
 }
 
 export interface IGlobalStoreObject<T, DATATYPES, OBJECTSTYPES, ACTIONSTYPES> {
@@ -74,17 +70,17 @@ class GlobalStore<T, O,
             };
         };
     } = {} as any;
-    protected objects: {[P in keyof O]: {
+    protected objects: { [P in keyof O]: {
         [index: string]: IGlobalStoreObject<O[P], T, O, ACTIONS>;
-    }  } = {} as any;
-    protected actions: {[P in keyof ACTIONS]: {
+    } } = {} as any;
+    protected actions: { [P in keyof ACTIONS]: {
         [index: string]: {
             action: IGlobalStoreActionFn<ACTIONS, P>;
             parent: IGlobalStoreParentItem<T, O>;
         };
-    }} = {} as any;
-    protected dataTypes: {[P in keyof T]: IGlobalStoreDataTypeConfig } = {} as any;
-    protected objectsTypes: {[P in keyof O]: IGlobalStoreObjectTypeConfig } = {} as any;
+    } } = {} as any;
+    protected dataTypes: { [P in keyof T]: IGlobalStoreDataTypeConfig } = {} as any;
+    protected objectsTypes: { [P in keyof O]: IGlobalStoreObjectTypeConfig } = {} as any;
     constructor(protected config: IGlobalStoreConfig<T, O, ACTIONS>) {
         this.dataTypes = this.config.dataTypes;
         this.objectsTypes = this.config.objectsTypes;
@@ -211,19 +207,16 @@ class GlobalStore<T, O,
         if (!this.data[type][id]) {
             throw new Error("Not found data with type " + type + " and id " + id);
         }
-        if (this.dataTypes[type].persistant) {
-            const objectPath = resolve(join(this.config.storePath, type, ...keys, ".json"));
-            await promisify(mkdirp)(dirname(objectPath));
-            await promisify(writeFile)(objectPath, JSON.stringify(value));
-        }
         this.data[type][id].updatedAt = new Date();
         this.data[type][id].emitter.emit(value);
     }
-    public async has(type: keyof T, id: string | string[]): Promise<boolean> {
-        if (Array.isArray(id)) {
-            id = id.join("~");
+    public async has(type: keyof T, keys: string | string[]): Promise<boolean> {
+        const id = Array.isArray(keys) ? keys.join("~") : keys;
+        const hasLocal = !!this.data[type][id] && this.data[type][id].emitter.has();
+        if (hasLocal) {
+            return true;
         }
-        return !!this.data[type][id] && this.data[type][id].emitter.has();
+        return false;
     }
     public async getMaybe<P extends keyof T>(type: P, id: string | string[]): Promise<T[P] | undefined> {
         if (Array.isArray(id)) {
@@ -238,10 +231,10 @@ class GlobalStore<T, O,
         if (Array.isArray(id)) {
             id = id.join("~");
         }
-        if (!this.data[type][id]) {
-            throw new Error("Not found object " + type + " with id " + id);
+        if (this.data[type][id]) {
+            return this.data[type][id].emitter.get();
         }
-        return this.data[type][id].emitter.get();
+        throw new Error("Not found object " + type + " with id " + id);
     }
     public async remove(type: keyof T, id: string | string[]): Promise<void> {
         if (Array.isArray(id)) {

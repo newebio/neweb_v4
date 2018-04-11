@@ -3,9 +3,10 @@ import { dispatchController, onNewFrameControllerData } from "./controllers";
 import { IGlobalStoreActionResolver } from "./GlobalStore";
 import { onHttpRequest } from "./http";
 import { navigateSeance, onNewRoute } from "./seances";
+import { sessionSetData } from "./sessions";
 import { disconnectSocket, initializeSocket, onNewConnection, recoverySocket } from "./sockets";
 
-type ActionsConfig = {[P in keyof IRegistryActions]: IGlobalStoreActionResolver<IRegistryActions, P>};
+type ActionsConfig = { [P in keyof IRegistryActions]: IGlobalStoreActionResolver<IRegistryActions, P> };
 const actions: ActionsConfig = {
     "new-controller-data": {
         action: (store, params, args) => onNewFrameControllerData(store, params.frameId, args),
@@ -39,6 +40,9 @@ const actions: ActionsConfig = {
     },
     "socket-frame-controller-dispatch": {
         action: (store, _, args) => dispatchController(store, args),
+    },
+    "session-set-data": {
+        action: (store, params, args) => sessionSetData(store, params, args),
     },
 };
 export default actions;

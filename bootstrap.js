@@ -20,6 +20,7 @@ const actions_1 = require("./lib/actions");
 const Application_1 = require("./lib/Application");
 const GlobalStore_1 = require("./lib/GlobalStore");
 const ModulesServer_1 = require("./lib/ModulesServer");
+const SessionsStorage_1 = require("./lib/SessionsStorage");
 const logger = console;
 const appPath = path_1.resolve(path_1.join(process.cwd(), "app"));
 const modulesPath = path_1.resolve(path_1.join(appPath, "..", "cache", "modules"));
@@ -61,6 +62,7 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
             "request": { lifetime: 1000, persistant: false },
         },
         objectsTypes: {
+            "sessions-storage": { lifetime: 1000 },
             "store": { lifetime: 0 },
             "http-request": { lifetime: 1000 },
             "http-response": { lifetime: 1000 },
@@ -75,6 +77,12 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
         objectType: "store",
         id: "root",
     }, app);
+    // Sessions storage
+    yield store.setObject("sessions-storage", "default", {
+        type: "object",
+        objectType: "store",
+        id: "root",
+    }, new SessionsStorage_1.default({ sessionsPath: path_1.join(appPath, "..", "sessions") }));
     expressApp.get("/bundle.js", (_, res) => res.sendFile(path_1.resolve(__dirname + "/dist/bundle.js")));
     const modulesServer = new ModulesServer_1.default({
         modulesPath,

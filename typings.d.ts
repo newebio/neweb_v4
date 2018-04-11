@@ -4,6 +4,7 @@ import GlobalStore from "./lib/GlobalStore";
 import { Socket } from "socket.io";
 import { Request, Response } from "express";
 import { IRemoteFrameControllerDispatchParams } from "./common";
+import SessionsStorage from "./lib/SessionsStorage";
 export interface IRequest {
     url: string;
     hostname: string;
@@ -158,6 +159,7 @@ export interface IDataRegistry {
 }
 export interface IObjectsRegistry {
     "store": GlobalStore<any, any, any>;
+    "sessions-storage": SessionsStorage;
     "app": IApplication;
     "frame-controller-object": IFrameController;
     "socket": Socket;
@@ -214,7 +216,11 @@ export interface IRegistryActions {
     "socket-navigate": {
         params: { seanceId: string };
         args: { url: string };
-    }
+    },
+    "session-set-data": {
+        params: { sessionId: string };
+        args: { name: string; value: any };
+    },
     [index: string]: { params: any, args: any };
 }
 export type NewebGlobalStore = GlobalStore<IDataRegistry, IObjectsRegistry, IRegistryActions>

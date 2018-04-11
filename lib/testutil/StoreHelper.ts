@@ -30,6 +30,7 @@ class StoreHelper {
             "request": { lifetime: 1000, persistant: false },
         },
         objectsTypes: {
+            "sessions-storage": { lifetime: 0 },
             "store": { lifetime: 0 },
             "http-request": { lifetime: 1000 },
             "http-response": { lifetime: 1000 },

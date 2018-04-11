@@ -62,7 +62,11 @@ export async function initializeSeance(store: NewebGlobalStore, params: {
     const app = await store.getObject("app", "default");
     const RouterClass = await app.getRouterClass();
     const router = new RouterClass({
-        session: await getSessionContext(store, params.sessionId),
+        session: await getSessionContext(store, {
+            type: "data",
+            dataType: "seance",
+            id: params.seanceId,
+        }, params.sessionId),
         context: await app.getContext(),
         request: params.request,
     });
@@ -109,7 +113,6 @@ async function createFrameSeanceController(store: NewebGlobalStore, seanceId: st
     const app = await store.getObject("app", "default");
     await createController(store, {
         frameId: frame.frameId,
-        session: await getSessionContext(store, seance.sessionId),
         context: await app.getContext(),
         frameName: frame.frameName,
         params: frame.params,
