@@ -20,7 +20,7 @@ const environment = process.env.NODE_ENV === "production" ? "production" : "deve
 const rawPort = process.env.PORT;
 const port = rawPort ? parseInt(rawPort, 10) : 5000;
 (async () => {
-    const { result: newebConfig } = withError(() => require(appPath + "/neweb.config").default);
+    const { result: newebConfig } = withError(() => require(appPath + "/../neweb.config").default);
     process.on("uncaughtException", (e) => {
         logger.log("uncaughtException", e);
     });
