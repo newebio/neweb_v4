@@ -2,15 +2,15 @@
 
 exports[`Styled::tests component should create css from props and add it to render 1`] = `
 <div
-  className="s1"
+  className="s__s1"
 >
   <div
     dangerouslySetInnerHTML={
       Object {
-        "__html": "<style type=\\"text/css\\">button {
+        "__html": "<style type=\\"text/css\\">.s__s1 button {
   color: blue;
 }
-ul li>a {
+.s__s1 ul li>a {
   color: red;
 }</style>",
       }

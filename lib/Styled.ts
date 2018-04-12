@@ -12,20 +12,14 @@ class Styled extends React.Component<{
         this.id = ++Styled.id;
     }
     public render() {
-        const jss = JSS.create({
-            createGenerateClassName: () => {
-                return (a) => {
-                    return "s" + this.id + " " + (a as any).key;
-                };
-            },
-        });
+        const jss = JSS.create({});
         jss.use({
             onProcessRule: ((rule: any) => {
-                rule.selectorText = rule.key;
+                rule.selectorText = ".s__s" + this.id + " " + rule.key;
             }) as any,
         });
         const styleSheet = jss.createStyleSheet(this.props.styles);
-        return React.createElement("div", { className: "s" + this.id }, [
+        return React.createElement("div", { className: "s__s" + this.id }, [
             React.createElement("div", {
                 key: "style",
                 dangerouslySetInnerHTML: { __html: `<style type="text/css">${styleSheet.toString()}</style>` },
