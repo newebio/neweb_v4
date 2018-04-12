@@ -4,7 +4,7 @@ exports[`Styled::tests component should create css from props and add it to rend
 <div
   className="s__s1"
 >
-  <head
+  <noindex
     dangerouslySetInnerHTML={
       Object {
         "__html": "<style type=\\"text/css\\">.s__s1 button {

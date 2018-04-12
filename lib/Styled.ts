@@ -20,7 +20,7 @@ class Styled extends React.Component<{
         });
         const styleSheet = jss.createStyleSheet(this.props.styles);
         return React.createElement("div", { className: "s__s" + this.id }, [
-            React.createElement("head", {
+            React.createElement("noindex", {
                 key: "style",
                 dangerouslySetInnerHTML: { __html: `<style type="text/css">${styleSheet.toString()}</style>` },
             }),
