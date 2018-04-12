@@ -15,12 +15,14 @@ export interface IApplicationConfig {
         addLocalPackage(path: string): Promise<IPackInfo>;
     };
 }
+const OPEN_TAG = "/*{%";
+const CLOSE_TAG = "%}*/";
 class Application implements IApplication {
     protected template = `<!doctype><html>
-    <head><title>{%title%}</title>{%meta%}
+    <head><title>${OPEN_TAG}title${CLOSE_TAG}</title>${OPEN_TAG}meta${CLOSE_TAG}
     <meta charset="utf8" /></head><body>
-    <div id="root">{%html%}</div>
-    <script>{%script%}</script>
+    <div id="root">${OPEN_TAG}html${CLOSE_TAG}</div>
+    <script>${OPEN_TAG}script${CLOSE_TAG}</script>
     <script async src="/bundle.js"></script>
     </body></html>`;
     protected context: any;
@@ -82,11 +84,11 @@ class Application implements IApplication {
             (await promisify(readFile)(templatePath)).toString()
             : this.template;
         return template
-            .replace("{%html%}", html)
-            .replace("{%title%}", meta.title || "")
-            .replace("{%meta%}", "<!--__page_meta_start__-->" + (meta.meta ? meta.meta.map((m) =>
+            .replace(OPEN_TAG + "html" + CLOSE_TAG, html)
+            .replace(OPEN_TAG + "title" + CLOSE_TAG, meta.title || "")
+            .replace(OPEN_TAG + "meta" + CLOSE_TAG, "<!--__page_meta_start__-->" + (meta.meta ? meta.meta.map((m) =>
                 `<meta name="${m.name}" content="${m.content}" />`).join("") : "") + "<!--__page_meta_end__-->")
-            .replace("{%script%}", `window["${INITIAL_VAR}"]=${JSON.stringify(initialInfo)}`);
+            .replace(OPEN_TAG + "script" + CLOSE_TAG, `window["${INITIAL_VAR}"]=${JSON.stringify(initialInfo)}`);
     }
 }
 export default Application;
