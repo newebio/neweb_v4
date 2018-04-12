@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { NewebGlobalStore } from "./..";
+import { NewebGlobalStore, Styled } from "./..";
 import PageRenderer from "./PageRenderer";
 import { createSeance, loadSeancePage } from "./seances";
 import { enrichResponseForSession, getSessionContext, resolveSessionIdByRequest } from "./sessions";
@@ -83,6 +83,8 @@ export async function onRequest(store: NewebGlobalStore, requestId: string) {
         page: await store.get("seance-current-page", seanceId),
     };
     const page = seanceDump.page;
+    // RESET STYLED
+    Styled.reset();
     // render page on server
     const pageRenderer = new PageRenderer({
         app,

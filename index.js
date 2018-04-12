@@ -21,3 +21,5 @@ var HistoryContext_1 = require("./client/HistoryContext");
 exports.HistoryContext = HistoryContext_1.default;
 var Link_1 = require("./client/Link");
 exports.Link = Link_1.default;
+var Styled_1 = require("./lib/Styled");
+exports.Styled = Styled_1.default;

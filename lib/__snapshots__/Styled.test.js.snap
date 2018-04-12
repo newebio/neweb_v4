@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Styled::tests component should create css from props and add it to render 1`] = `
+<div
+  className="s1"
+>
+  <div
+    dangerouslySetInnerHTML={
+      Object {
+        "__html": "<style type=\\"text/css\\">button {
+  color: blue;
+}
+ul li>a {
+  color: red;
+}</style>",
+      }
+    }
+  />
+</div>
+`;

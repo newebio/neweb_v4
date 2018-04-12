@@ -10,3 +10,4 @@ export { default as SeansStatusContext } from "./client/SeansStatusContext";
 export { default as NetworkStatusContext } from "./client/NetworkStatusContext";
 export { default as HistoryContext } from "./client/HistoryContext";
 export { default as Link } from "./client/Link";
+export { default as Styled } from "./lib/Styled";
