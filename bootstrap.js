@@ -15,6 +15,7 @@ const neweb_cli_1 = require("neweb-cli");
 const neweb_pack_1 = require("neweb-pack");
 const path_1 = require("path");
 const SocketIOServer = require("socket.io");
+const with_error_1 = require("with-error");
 const common_1 = require("./common");
 const actions_1 = require("./lib/actions");
 const Application_1 = require("./lib/Application");
@@ -28,6 +29,7 @@ const environment = process.env.NODE_ENV === "production" ? "production" : "deve
 const rawPort = process.env.PORT;
 const port = rawPort ? parseInt(rawPort, 10) : 5000;
 (() => __awaiter(this, void 0, void 0, function* () {
+    const { result: newebConfig } = with_error_1.default(() => require(appPath + "/neweb.config").default);
     process.on("uncaughtException", (e) => {
         logger.log("uncaughtException", e);
     });
@@ -41,6 +43,7 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
         excludedModules: ["react", "react-dom", "neweb"],
         modulesPath,
         REQUIRE_FUNC_NAME: common_1.REQUIRE_FUNC_NAME,
+        webpackConfig: newebConfig && newebConfig.webpack ? newebConfig.webpack : {},
     });
     const app = new Application_1.default({
         environment,

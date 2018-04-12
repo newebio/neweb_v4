@@ -4292,9 +4292,9 @@ neweb-cli@^0.0.4:
     mkdirp "^0.5.1"
     rimraf "^2.6.2"
 
-neweb-pack@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/neweb-pack/-/neweb-pack-0.1.1.tgz#40a75e217c936b9f200e2640ea4ebdb9bce2d4d1"
+neweb-pack@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/neweb-pack/-/neweb-pack-0.1.2.tgz#d5c0e136e5b81b5352617047ad28b3c1db85469f"
   dependencies:
     "@types/globby" "^6.1.0"
     "@types/mkdirp" "^0.5.2"

@@ -5,6 +5,7 @@ import { Interactive } from "neweb-cli";
 import { ModulePacker } from "neweb-pack";
 import { join, resolve } from "path";
 import SocketIOServer = require("socket.io");
+import withError from "with-error";
 import { IDataRegistry, IObjectsRegistry, IRegistryActions } from ".";
 import { REQUIRE_FUNC_NAME } from "./common";
 import actions from "./lib/actions";
@@ -19,6 +20,7 @@ const environment = process.env.NODE_ENV === "production" ? "production" : "deve
 const rawPort = process.env.PORT;
 const port = rawPort ? parseInt(rawPort, 10) : 5000;
 (async () => {
+    const { result: newebConfig } = withError(() => require(appPath + "/neweb.config").default);
     process.on("uncaughtException", (e) => {
         logger.log("uncaughtException", e);
     });
@@ -33,6 +35,7 @@ const port = rawPort ? parseInt(rawPort, 10) : 5000;
         excludedModules: ["react", "react-dom", "neweb"],
         modulesPath,
         REQUIRE_FUNC_NAME,
+        webpackConfig: newebConfig && newebConfig.webpack ? newebConfig.webpack : {},
     });
     const app = new Application({
         environment,

@@ -1,6 +1,6 @@
 {
   "name": "neweb",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -48,7 +48,7 @@
     "is-absolute-url": "^2.1.0",
     "mkdirp": "^0.5.1",
     "neweb-cli": "^0.0.4",
-    "neweb-pack": "^0.1.1",
+    "neweb-pack": "^0.1.2",
     "onemitter": "^0.2.4",
     "react": "^16.3.0",
     "react-dom": "^16.3.0",
